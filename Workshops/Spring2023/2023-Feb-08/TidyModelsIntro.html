@@ -6,6 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Greg Chism">
 
 <title>Tidymodels: Build a Model</title>
 <style>
@@ -101,10 +102,28 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 </head>
 
-<body class="fullcontent">
+<body>
 
 <div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
-
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#description" id="toc-description" class="nav-link active" data-scroll-target="#description">Description</a>
+  <ul class="collapse">
+  <li><a href="#objectives" id="toc-objectives" class="nav-link" data-scroll-target="#objectives">Objectives:</a></li>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction"><strong>Introduction</strong></a></li>
+  <li><a href="#canopy-rain-forest-drought-tolerance-data" id="toc-canopy-rain-forest-drought-tolerance-data" class="nav-link" data-scroll-target="#canopy-rain-forest-drought-tolerance-data">Canopy rain forest drought tolerance data</a></li>
+  <li><a href="#build-and-fit-a-model" id="toc-build-and-fit-a-model" class="nav-link" data-scroll-target="#build-and-fit-a-model">Build and Fit a Model</a></li>
+  <li><a href="#use-a-model-to-predict" id="toc-use-a-model-to-predict" class="nav-link" data-scroll-target="#use-a-model-to-predict">Use a Model to Predict</a></li>
+  <li><a href="#model-with-a-different-engine" id="toc-model-with-a-different-engine" class="nav-link" data-scroll-target="#model-with-a-different-engine">Model with a Different Engine</a></li>
+  <li><a href="#why-does-is-work-that-way" id="toc-why-does-is-work-that-way" class="nav-link" data-scroll-target="#why-does-is-work-that-way">Why does is work that way?</a></li>
+  <li><a href="#session-information" id="toc-session-information" class="nav-link" data-scroll-target="#session-information">Session Information</a></li>
+  </ul></li>
+  </ul>
+</nav>
+</div>
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
@@ -116,6 +135,12 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <div class="quarto-title-meta">
 
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Greg Chism </p>
+          </div>
+  </div>
     
   
     
@@ -144,8 +169,15 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h2 class="anchored" data-anchor-id="description">Description</h2>
 <p>Python has taken most of the hype as the most widely used programming language for machine learning. This has left R users with a choice: 1. learn Python or 2. don’t do machine learning very well. Enter <a href="https://www.tidymodels.org/"><code>tidymodels</code></a>, Posit’s solution to machine learning in R, using a framework similar to the <a href="https://www.tidyverse.org/"><code>tidyverse</code></a>.</p>
 <p>In this session of the Classical Machine Learning workshop series, we will overview how to build a model using the <code>tidymodels</code> framework in R. This is the first necessary step towards the most sophisticated models that we will deploy later in this series.</p>
+<p>This workshop borrows heavily from open source materials hosted on <a href="https://www.tidymodels.org/">tidymodels.org</a> found <a href="https://www.tidymodels.org/start/models/">here</a>. The author replaced the original <code>urchins</code> data with <a href="https://arizona.figshare.com/articles/dataset/Data_for_Ecosystem_fluxes_during_drought_and_recovery_in_an_experimental_forest_/14632593/1">Meredith, Ladd, and Werner 2021</a> which is described below.</p>
 <section id="objectives" class="level3">
 <h3 class="anchored" data-anchor-id="objectives">Objectives:</h3>
+<ol type="1">
+<li>Load and examine data</li>
+<li>Build and fit a model</li>
+<li>Use a model to predict</li>
+<li>Model with different engines</li>
+</ol>
 <hr>
 </section>
 <section id="introduction" class="level3">
@@ -173,7 +205,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 ✖ dplyr::filter()  masks stats::filter()
 ✖ dplyr::lag()     masks stats::lag()
 ✖ recipes::step()  masks stats::step()
-• Search for functions across packages at https://www.tidymodels.org/find/</code></pre>
+• Learn how to get started at https://www.tidymodels.org/start/</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Helper packages</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)       <span class="co"># for importing data</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>

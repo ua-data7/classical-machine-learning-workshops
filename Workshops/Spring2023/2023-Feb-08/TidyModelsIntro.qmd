@@ -1,8 +1,12 @@
 ---
 title: "Tidymodels: Build a Model"
-format: html
+author: Greg Chism
+format:
+  html:
+    theme: cosmo
+    code-copy: true
+    toc: true
 editor: visual
-theme: flatly
 ---
 
 ::: columns
@@ -21,7 +25,14 @@ Python has taken most of the hype as the most widely used programming language f
 
 In this session of the Classical Machine Learning workshop series, we will overview how to build a model using the `tidymodels` framework in R. This is the first necessary step towards the most sophisticated models that we will deploy later in this series.
 
+This workshop borrows heavily from open source materials hosted on [tidymodels.org](https://www.tidymodels.org/) found [here](https://www.tidymodels.org/start/models/). The author replaced the original `urchins` data with [Meredith, Ladd, and Werner 2021](https://arizona.figshare.com/articles/dataset/Data_for_Ecosystem_fluxes_during_drought_and_recovery_in_an_experimental_forest_/14632593/1) which is described below.
+
 ### Objectives:
+
+1.  Load and examine data
+2.  Build and fit a model
+3.  Use a model to predict
+4.  Model with different engines
 
 ------------------------------------------------------------------------
 

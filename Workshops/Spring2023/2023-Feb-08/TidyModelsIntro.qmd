@@ -7,6 +7,7 @@ format:
     code-copy: true
     toc: true
 editor: visual
+bibliography: references.bib
 ---
 
 ::: columns
@@ -58,7 +59,7 @@ theme_update(legend.position = "right")
 
 ### Canopy rain forest drought tolerance data
 
-Let's use the data from [Meredith, Ladd, and Werner 2021](https://arizona.figshare.com/articles/dataset/Data_for_Ecosystem_fluxes_during_drought_and_recovery_in_an_experimental_forest_/14632593/1) which is from a study that investigates the effects of climate change on canopy and understory (those that grow below the canopy and are share tolerant) trees. The data examine water flux in trees across four groups based on drought susceptibility `Group`:
+Let's use the data from [@meredith2021] which is from a study that investigates the effects of climate change on canopy and understory (those that grow below the canopy and are share tolerant) trees. The data examine water flux in trees across four groups based on drought susceptibility `Group`:
 
 -   `drought-sens-canopy`: drought sensitive canopy trees
 

@@ -132,14 +132,17 @@ div.csl-indent {
   <li><a href="#description" id="toc-description" class="nav-link active" data-scroll-target="#description">Description</a>
   <ul class="collapse">
   <li><a href="#objectives" id="toc-objectives" class="nav-link" data-scroll-target="#objectives">Objectives:</a></li>
-  <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction"><strong>Introduction</strong></a></li>
-  <li><a href="#canopy-rain-forest-drought-tolerance-data" id="toc-canopy-rain-forest-drought-tolerance-data" class="nav-link" data-scroll-target="#canopy-rain-forest-drought-tolerance-data">Canopy rain forest drought tolerance data</a></li>
+  </ul></li>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#canopy-rain-forest-drought-tolerance-data" id="toc-canopy-rain-forest-drought-tolerance-data" class="nav-link" data-scroll-target="#canopy-rain-forest-drought-tolerance-data">Canopy rain forest drought tolerance data</a>
+  <ul class="collapse">
+  <li><a href="#examine-the-data" id="toc-examine-the-data" class="nav-link" data-scroll-target="#examine-the-data">Examine the data</a></li>
+  </ul></li>
   <li><a href="#build-and-fit-a-model" id="toc-build-and-fit-a-model" class="nav-link" data-scroll-target="#build-and-fit-a-model">Build and Fit a Model</a></li>
   <li><a href="#use-a-model-to-predict" id="toc-use-a-model-to-predict" class="nav-link" data-scroll-target="#use-a-model-to-predict">Use a Model to Predict</a></li>
   <li><a href="#model-with-a-different-engine" id="toc-model-with-a-different-engine" class="nav-link" data-scroll-target="#model-with-a-different-engine">Model with a Different Engine</a></li>
   <li><a href="#why-does-is-work-that-way" id="toc-why-does-is-work-that-way" class="nav-link" data-scroll-target="#why-does-is-work-that-way">Why does is work that way?</a></li>
   <li><a href="#session-information" id="toc-session-information" class="nav-link" data-scroll-target="#session-information">Session Information</a></li>
-  </ul></li>
   </ul>
 </nav>
 </div>
@@ -187,7 +190,7 @@ div.csl-indent {
 <section id="description" class="level2">
 <h2 class="anchored" data-anchor-id="description">Description</h2>
 <p>Python has taken most of the hype as the most widely used programming language for machine learning. This has left R users with a choice: 1. learn Python or 2. don’t do machine learning very well. Enter <a href="https://www.tidymodels.org/"><code>tidymodels</code></a>, Posit’s solution to machine learning in R, using a framework similar to the <a href="https://www.tidyverse.org/"><code>tidyverse</code></a>.</p>
-<p>In this session of the Classical Machine Learning workshop series, we will overview how to build a model using the <code>tidymodels</code> framework in R. This is the first necessary step towards the most sophisticated models that we will deploy later in this series.</p>
+<p>In this session of the Classical Machine Learning workshop series, we will overview how to build a model using the <code>tidymodels</code> framework in R. This is the first necessary step towards the more sophisticated models that we will deploy later in this series.</p>
 <p>This workshop borrows heavily from open source materials hosted on <a href="https://www.tidymodels.org/">tidymodels.org</a> found <a href="https://www.tidymodels.org/start/models/">here</a>. The author replaced the original <code>urchins</code> data with <a href="https://arizona.figshare.com/articles/dataset/Data_for_Ecosystem_fluxes_during_drought_and_recovery_in_an_experimental_forest_/14632593/1">Meredith, Ladd, and Werner 2021</a> which is described below.</p>
 <section id="objectives" class="level3">
 <h3 class="anchored" data-anchor-id="objectives">Objectives:</h3>
@@ -199,8 +202,9 @@ div.csl-indent {
 </ol>
 <hr>
 </section>
-<section id="introduction" class="level3">
-<h3 class="anchored" data-anchor-id="introduction"><strong>Introduction</strong></h3>
+</section>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
 <p>How do you create a statistical model using <code>tidymodels</code>? In this article, we will walk you through the steps. We start with data for modeling, learn how to specify and train models with different engines using the <a href="https://parsnip.tidymodels.org/">parsnip package</a>, and understand why these functions are designed this way.</p>
 <p>To use code in this article, you will need to install the following packages: <code>broom.mixed</code>, <code>dotwhisker</code>, <code>readr</code>, <code>rstanarm</code>, <code>RCurl</code> and <code>tidymodels</code>.</p>
 <div class="cell">
@@ -224,7 +228,7 @@ div.csl-indent {
 ✖ dplyr::filter()  masks stats::filter()
 ✖ dplyr::lag()     masks stats::lag()
 ✖ recipes::step()  masks stats::step()
-• Dig deeper into tidy modeling with R at https://www.tmwr.org</code></pre>
+• Learn how to get started at https://www.tidymodels.org/start/</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Helper packages</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)       <span class="co"># for importing data</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -259,8 +263,8 @@ Attaching package: 'RCurl'</code></pre>
 </div>
 <hr>
 </section>
-<section id="canopy-rain-forest-drought-tolerance-data" class="level3">
-<h3 class="anchored" data-anchor-id="canopy-rain-forest-drought-tolerance-data">Canopy rain forest drought tolerance data</h3>
+<section id="canopy-rain-forest-drought-tolerance-data" class="level2">
+<h2 class="anchored" data-anchor-id="canopy-rain-forest-drought-tolerance-data">Canopy rain forest drought tolerance data</h2>
 <p>Let’s use the data from <span class="citation" data-cites="meredith2021">(<a href="#ref-meredith2021" role="doc-biblioref">Meredith, Ladd, and Werner 2021</a>)</span> which is from a study that investigates the effects of climate change on canopy and understory (those that grow below the canopy and are share tolerant) trees. The data examine water flux in trees across four groups based on drought susceptibility <code>Group</code>:</p>
 <ul>
 <li><p><code>drought-sens-canopy</code>: drought sensitive canopy trees</p></li>
@@ -273,8 +277,8 @@ Attaching package: 'RCurl'</code></pre>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">getURL</span>(<span class="st">"https://raw.githubusercontent.com/Gchism94/Data7_EDA_In_R_Workshops/main/Data7_EDA_In_R_Book/data/Data_Fig2_Repo.csv"</span>)</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="at">text =</span> data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<section id="examine-the-data" class="level4">
-<h4 class="anchored" data-anchor-id="examine-the-data">Examine the data</h4>
+<section id="examine-the-data" class="level3">
+<h3 class="anchored" data-anchor-id="examine-the-data">Examine the data</h3>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>data <span class="sc">%&gt;%</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -315,8 +319,8 @@ Attaching package: 'RCurl'</code></pre>
 <hr>
 </section>
 </section>
-<section id="build-and-fit-a-model" class="level3">
-<h3 class="anchored" data-anchor-id="build-and-fit-a-model">Build and Fit a Model</h3>
+<section id="build-and-fit-a-model" class="level2">
+<h2 class="anchored" data-anchor-id="build-and-fit-a-model">Build and Fit a Model</h2>
 <p>A standard three-way analysis of variance (<a href="https://www.statisticshowto.com/three-way-anova/">ANOVA</a>) model makes sense for this dataset because we have both a continuous and a categorical predictor variables. Since the slopes appear to be different for at least two of the drought treatments, let’s build a model that allows for two-way interactions. Specifying an R formula with our variables in this way:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>mLWP <span class="sc">~</span> pLWP <span class="sc">*</span> Group</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -398,8 +402,8 @@ pLWP:GroupDrought-tol-canopy   pLWP:GroupDrought-tol-under
 </div>
 <hr>
 </section>
-<section id="use-a-model-to-predict" class="level3">
-<h3 class="anchored" data-anchor-id="use-a-model-to-predict">Use a Model to Predict</h3>
+<section id="use-a-model-to-predict" class="level2">
+<h2 class="anchored" data-anchor-id="use-a-model-to-predict">Use a Model to Predict</h2>
 <p>This fitted object <code>lm_fit</code> has the <code>lm</code> model output built-in, which you can access with <code>lm_fit$fit</code>, but there are some benefits to using the fitted parsnip model object when it comes to predicting.</p>
 <p>Suppose that, for a publication, it would be particularly interesting to make a plot of the mean midday water potential (<code>mLWP</code>) for trees that have a pre-dawn water potential (<code>pLWP</code>) of -1.75 MPa. To create such a graph, we start with some new example data that we will make predictions for, to show in our graph:</p>
 <div class="cell">
@@ -470,8 +474,8 @@ pLWP:GroupDrought-tol-canopy   pLWP:GroupDrought-tol-under
 </div>
 <hr>
 </section>
-<section id="model-with-a-different-engine" class="level3">
-<h3 class="anchored" data-anchor-id="model-with-a-different-engine">Model with a Different Engine</h3>
+<section id="model-with-a-different-engine" class="level2">
+<h2 class="anchored" data-anchor-id="model-with-a-different-engine">Model with a Different Engine</h2>
 <p>Every one on your team is happy with that plot <em>except</em> that one person who just read their first book on <a href="https://bayesian.org/what-is-bayesian-analysis/">Bayesian analysis</a>. They are interested in knowing if the results would be different if the model were estimated using a Bayesian approach. In such an analysis, a <a href="https://towardsdatascience.com/introduction-to-bayesian-linear-regression-e66e60791ea7"><em>prior distribution</em></a> needs to be declared for each model parameter that represents the possible values of the parameters (before being exposed to the observed data). After some discussion, the group agrees that the priors should be bell-shaped but, since no one has any idea what the range of values should be, to take a conservative approach and make the priors <em>wide</em> using a Cauchy distribution (which is the same as a t-distribution with a single degree of freedom).</p>
 <p>The <a href="https://mc-stan.org/rstanarm/articles/priors.html">documentation</a> on the <code>rstanarm</code> package shows us that the <code>stan_glm()</code> function can be used to estimate this model, and that the function arguments that need to be specified are called <code>prior</code> and <code>prior_intercept</code>. It turns out that <code>linear_reg()</code> has a <a href="https://parsnip.tidymodels.org/reference/linear_reg.html#details"><code>stan</code> engine</a>. Since these prior distribution arguments are specific to the Stan software, they are passed as arguments to <a href="https://parsnip.tidymodels.org/reference/set_engine.html"><code>parsnip::set_engine()</code></a>. After that, the same exact <code>fit()</code> call is used:</p>
 <div class="cell">
@@ -561,8 +565,8 @@ sigma 0.12762 0.00564
 </blockquote>
 <hr>
 </section>
-<section id="why-does-is-work-that-way" class="level3">
-<h3 class="anchored" data-anchor-id="why-does-is-work-that-way">Why does is work that way?</h3>
+<section id="why-does-is-work-that-way" class="level2">
+<h2 class="anchored" data-anchor-id="why-does-is-work-that-way">Why does is work that way?</h2>
 <p>The extra step of defining the model using a function like <code>linear_reg()</code> might seem superfluous since a call to <code>lm()</code> is much more succinct. However, the problem with standard modeling functions is that they don’t separate what you want to do from the execution. For example, the process of executing a formula has to happen repeatedly across model calls even when the formula does not change; we can’t recycle those computations.</p>
 <p>Also, using the <code>tidymodels</code> framework, we can do some interesting things by incrementally creating a model (instead of using single function call). <a href="https://www.tidymodels.org/start/tuning/">Model tuning</a> with <code>tidymodels</code> uses the specification of the model to declare what parts of the model should be tuned. That would be very difficult to do if <code>linear_reg()</code> immediately fit the model.</p>
 <p>If you are familiar with the tidyverse, you may have noticed that our modeling code uses the magrittr pipe (<code>%&gt;%</code>). With dplyr and other <code>tidyverse</code> packages, the pipe works well because all of the functions take the <em>data</em> as the first argument. For example:</p>
@@ -595,8 +599,8 @@ sigma 0.12762 0.00564
 </div>
 <hr>
 </section>
-<section id="session-information" class="level3">
-<h3 class="anchored" data-anchor-id="session-information">Session Information</h3>
+<section id="session-information" class="level2">
+<h2 class="anchored" data-anchor-id="session-information">Session Information</h2>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>─ Session info ───────────────────────────────────────────────────────────────
@@ -609,156 +613,33 @@ sigma 0.12762 0.00564
  collate  en_US.UTF-8
  ctype    en_US.UTF-8
  tz       America/Phoenix
- date     2023-01-24
+ date     2023-01-26
  pandoc   2.19.2 @ /Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/ (via rmarkdown)
 
 ─ Packages ───────────────────────────────────────────────────────────────────
- package      * version    date (UTC) lib source
- assertthat     0.2.1      2019-03-21 [1] CRAN (R 4.2.0)
- backports      1.4.1      2021-12-13 [1] CRAN (R 4.2.0)
- base64enc      0.1-3      2015-07-28 [1] CRAN (R 4.2.0)
- bayesplot      1.10.0     2022-11-16 [1] CRAN (R 4.2.0)
- bayestestR     0.13.0     2022-09-18 [1] CRAN (R 4.2.0)
- bitops         1.0-7      2021-04-24 [1] CRAN (R 4.2.0)
- boot           1.3-28     2021-05-03 [1] CRAN (R 4.2.1)
- broom        * 1.0.1      2022-08-29 [1] CRAN (R 4.2.0)
- broom.mixed  * 0.2.9.4    2022-04-17 [1] CRAN (R 4.2.0)
- callr          3.7.2      2022-08-22 [1] CRAN (R 4.2.0)
- class          7.3-20     2022-01-16 [1] CRAN (R 4.2.1)
- cli            3.4.1      2022-09-23 [1] CRAN (R 4.2.0)
- coda           0.19-4     2020-09-30 [1] CRAN (R 4.2.0)
- codetools      0.2-18     2020-11-04 [1] CRAN (R 4.2.1)
- colorspace     2.0-3      2022-02-21 [1] CRAN (R 4.2.0)
- colourpicker   1.1.1      2021-10-04 [1] CRAN (R 4.2.0)
- crayon         1.5.2      2022-09-29 [1] CRAN (R 4.2.0)
- crosstalk      1.2.0      2021-11-04 [1] CRAN (R 4.2.0)
- datawizard     0.6.4      2022-11-19 [1] CRAN (R 4.2.0)
- DBI            1.1.3      2022-06-18 [1] CRAN (R 4.2.0)
- dials        * 1.1.0      2022-11-04 [1] CRAN (R 4.2.0)
- DiceDesign     1.9        2021-02-13 [1] CRAN (R 4.2.0)
- digest         0.6.30     2022-10-18 [1] CRAN (R 4.2.0)
- dotwhisker   * 0.7.4      2021-09-02 [1] CRAN (R 4.2.0)
- dplyr        * 1.0.10     2022-09-01 [1] CRAN (R 4.2.1)
- DT             0.26       2022-10-19 [1] CRAN (R 4.2.0)
- dygraphs       1.1.1.6    2018-07-11 [1] CRAN (R 4.2.0)
- ellipsis       0.3.2      2021-04-29 [1] CRAN (R 4.2.0)
- emmeans        1.8.1-1    2022-09-08 [1] CRAN (R 4.2.0)
- estimability   1.4.1      2022-08-05 [1] CRAN (R 4.2.0)
- evaluate       0.17       2022-10-07 [1] CRAN (R 4.2.0)
- fansi          1.0.3      2022-03-24 [1] CRAN (R 4.2.0)
- farver         2.1.1      2022-07-06 [1] CRAN (R 4.2.0)
- fastmap        1.1.0      2021-01-25 [1] CRAN (R 4.2.0)
- forcats        0.5.2      2022-08-19 [1] CRAN (R 4.2.0)
- foreach        1.5.2      2022-02-02 [1] CRAN (R 4.2.0)
- furrr          0.3.1      2022-08-15 [1] CRAN (R 4.2.0)
- future         1.29.0     2022-11-06 [1] CRAN (R 4.2.0)
- future.apply   1.10.0     2022-11-05 [1] CRAN (R 4.2.0)
- generics       0.1.3      2022-07-05 [1] CRAN (R 4.2.0)
- ggplot2      * 3.4.0      2022-11-04 [1] CRAN (R 4.2.0)
- ggstance       0.3.6      2022-11-16 [1] CRAN (R 4.2.0)
- globals        0.16.1     2022-08-28 [1] CRAN (R 4.2.0)
- glue           1.6.2      2022-02-24 [1] CRAN (R 4.2.0)
- gower          1.0.0      2022-02-03 [1] CRAN (R 4.2.0)
- GPfit          1.0-8      2019-02-08 [1] CRAN (R 4.2.0)
- gridExtra      2.3        2017-09-09 [1] CRAN (R 4.2.0)
- gtable         0.3.1      2022-09-01 [1] CRAN (R 4.2.1)
- gtools         3.9.4      2022-11-27 [1] CRAN (R 4.2.0)
- hardhat        1.2.0      2022-06-30 [1] CRAN (R 4.2.0)
- hms            1.1.2      2022-08-19 [1] CRAN (R 4.2.0)
- htmltools      0.5.3      2022-07-18 [1] CRAN (R 4.2.0)
- htmlwidgets    1.5.4      2021-09-08 [1] CRAN (R 4.2.0)
- httpuv         1.6.6      2022-09-08 [1] CRAN (R 4.2.0)
- igraph         1.3.5      2022-09-22 [1] CRAN (R 4.2.0)
- infer        * 1.0.3      2022-08-22 [1] CRAN (R 4.2.0)
- inline         0.3.19     2021-05-31 [1] CRAN (R 4.2.0)
- insight        0.18.8     2022-11-24 [1] CRAN (R 4.2.1)
- ipred          0.9-13     2022-06-02 [1] CRAN (R 4.2.0)
- iterators      1.0.14     2022-02-05 [1] CRAN (R 4.2.0)
- jsonlite       1.8.3      2022-10-21 [1] CRAN (R 4.2.0)
- knitr          1.40       2022-08-24 [1] CRAN (R 4.2.0)
- labeling       0.4.2      2020-10-20 [1] CRAN (R 4.2.0)
- later          1.3.0      2021-08-18 [1] CRAN (R 4.2.0)
- lattice        0.20-45    2021-09-22 [1] CRAN (R 4.2.1)
- lava           1.7.0      2022-10-25 [1] CRAN (R 4.2.0)
- lhs            1.1.5      2022-03-22 [1] CRAN (R 4.2.0)
- lifecycle      1.0.3      2022-10-07 [1] CRAN (R 4.2.0)
- listenv        0.8.0      2019-12-05 [1] CRAN (R 4.2.0)
- lme4           1.1-30     2022-07-08 [1] CRAN (R 4.2.0)
- loo            2.5.1      2022-03-24 [1] CRAN (R 4.2.0)
- lubridate      1.8.0      2021-10-07 [1] CRAN (R 4.2.0)
- magrittr       2.0.3      2022-03-30 [1] CRAN (R 4.2.0)
- markdown       1.2        2022-10-19 [1] CRAN (R 4.2.0)
- MASS           7.3-58.1   2022-08-03 [1] CRAN (R 4.2.0)
- Matrix         1.5-1      2022-09-13 [1] CRAN (R 4.2.0)
- matrixStats    0.62.0     2022-04-19 [1] CRAN (R 4.2.0)
- mgcv           1.8-41     2022-10-21 [1] CRAN (R 4.2.0)
- mime           0.12       2021-09-28 [1] CRAN (R 4.2.0)
- miniUI         0.1.1.1    2018-05-18 [1] CRAN (R 4.2.0)
- minqa          1.2.5      2022-10-19 [1] CRAN (R 4.2.0)
- modeldata    * 1.0.1      2022-09-06 [1] CRAN (R 4.2.0)
- munsell        0.5.0      2018-06-12 [1] CRAN (R 4.2.0)
- mvtnorm        1.1-3      2021-10-08 [1] CRAN (R 4.2.0)
- nlme           3.1-160    2022-10-10 [1] CRAN (R 4.2.0)
- nloptr         2.0.3      2022-05-26 [1] CRAN (R 4.2.0)
- nnet           7.3-18     2022-09-28 [1] CRAN (R 4.2.0)
- parallelly     1.32.1     2022-07-21 [1] CRAN (R 4.2.0)
- parameters     0.20.0     2022-11-21 [1] CRAN (R 4.2.1)
- parsnip      * 1.0.3      2022-11-11 [1] CRAN (R 4.2.0)
- pillar         1.8.1      2022-08-19 [1] CRAN (R 4.2.0)
- pkgbuild       1.3.1      2021-12-20 [1] CRAN (R 4.2.0)
- pkgconfig      2.0.3      2019-09-22 [1] CRAN (R 4.2.0)
- plyr           1.8.7      2022-03-24 [1] CRAN (R 4.2.0)
- prettyunits    1.1.1      2020-01-24 [1] CRAN (R 4.2.0)
- processx       3.7.0      2022-07-07 [1] CRAN (R 4.2.0)
- prodlim        2019.11.13 2019-11-17 [1] CRAN (R 4.2.0)
- promises       1.2.0.1    2021-02-11 [1] CRAN (R 4.2.0)
- ps             1.7.1      2022-06-18 [1] CRAN (R 4.2.0)
- purrr        * 0.3.5      2022-10-06 [1] CRAN (R 4.2.0)
- R6             2.5.1      2021-08-19 [1] CRAN (R 4.2.0)
- Rcpp           1.0.9      2022-07-08 [1] CRAN (R 4.2.0)
- RcppParallel   5.1.6      2023-01-09 [1] CRAN (R 4.2.0)
- RCurl        * 1.98-1.9   2022-10-03 [1] CRAN (R 4.2.0)
- readr        * 2.1.3      2022-10-01 [1] CRAN (R 4.2.0)
- recipes      * 1.0.3      2022-11-09 [1] CRAN (R 4.2.0)
- reshape2       1.4.4      2020-04-09 [1] CRAN (R 4.2.0)
- rlang          1.0.6      2022-09-24 [1] CRAN (R 4.2.0)
- rmarkdown      2.17       2022-10-07 [1] CRAN (R 4.2.0)
- rpart          4.1.19     2022-10-21 [1] CRAN (R 4.2.0)
- rsample      * 1.1.0      2022-08-08 [1] CRAN (R 4.2.0)
- rstan          2.21.8     2023-01-17 [1] CRAN (R 4.2.0)
- rstanarm       2.21.3     2022-04-09 [1] CRAN (R 4.2.0)
- rstantools     2.2.0      2022-04-08 [1] CRAN (R 4.2.0)
- rstudioapi     0.14       2022-08-22 [1] CRAN (R 4.2.0)
- scales       * 1.2.1      2022-08-20 [1] CRAN (R 4.2.0)
- sessioninfo    1.2.2      2021-12-06 [1] CRAN (R 4.2.0)
- shiny          1.7.2      2022-07-19 [1] CRAN (R 4.2.0)
- shinyjs        2.1.0      2021-12-23 [1] CRAN (R 4.2.0)
- shinystan      2.6.0      2022-03-03 [1] CRAN (R 4.2.0)
- shinythemes    1.2.0      2021-01-25 [1] CRAN (R 4.2.0)
- StanHeaders    2.21.0-7   2020-12-17 [1] CRAN (R 4.2.0)
- stringi        1.7.8      2022-07-11 [1] CRAN (R 4.2.0)
- stringr        1.4.1      2022-08-20 [1] CRAN (R 4.2.0)
- survival       3.4-0      2022-08-09 [1] CRAN (R 4.2.0)
- threejs        0.3.3      2020-01-21 [1] CRAN (R 4.2.0)
- tibble       * 3.1.8      2022-07-22 [1] CRAN (R 4.2.0)
- tidymodels   * 1.0.0      2022-07-13 [1] CRAN (R 4.2.0)
- tidyr        * 1.2.1      2022-09-08 [1] CRAN (R 4.2.0)
- tidyselect     1.2.0      2022-10-10 [1] CRAN (R 4.2.0)
- timeDate       4021.106   2022-09-30 [1] CRAN (R 4.2.0)
- tune         * 1.0.1      2022-10-09 [1] CRAN (R 4.2.0)
- tzdb           0.3.0      2022-03-28 [1] CRAN (R 4.2.0)
- utf8           1.2.2      2021-07-24 [1] CRAN (R 4.2.0)
- vctrs          0.5.0      2022-10-22 [1] CRAN (R 4.2.0)
- viridisLite    0.4.1      2022-08-22 [1] CRAN (R 4.2.0)
- withr          2.5.0      2022-03-03 [1] CRAN (R 4.2.0)
- workflows    * 1.1.2      2022-11-16 [1] CRAN (R 4.2.0)
- workflowsets * 1.0.0      2022-07-12 [1] CRAN (R 4.2.0)
- xfun           0.34       2022-10-18 [1] CRAN (R 4.2.0)
- xtable         1.8-4      2019-04-21 [1] CRAN (R 4.2.0)
- xts            0.12.2     2022-10-16 [1] CRAN (R 4.2.0)
- yaml           2.3.6      2022-10-18 [1] CRAN (R 4.2.0)
- yardstick    * 1.1.0      2022-09-07 [1] CRAN (R 4.2.0)
- zoo            1.8-11     2022-09-17 [1] CRAN (R 4.2.0)
+ package      * version  date (UTC) lib source
+ broom        * 1.0.1    2022-08-29 [1] CRAN (R 4.2.0)
+ broom.mixed  * 0.2.9.4  2022-04-17 [1] CRAN (R 4.2.0)
+ dials        * 1.1.0    2022-11-04 [1] CRAN (R 4.2.0)
+ dotwhisker   * 0.7.4    2021-09-02 [1] CRAN (R 4.2.0)
+ dplyr        * 1.0.10   2022-09-01 [1] CRAN (R 4.2.1)
+ ggplot2      * 3.4.0    2022-11-04 [1] CRAN (R 4.2.0)
+ infer        * 1.0.3    2022-08-22 [1] CRAN (R 4.2.0)
+ modeldata    * 1.0.1    2022-09-06 [1] CRAN (R 4.2.0)
+ parsnip      * 1.0.3    2022-11-11 [1] CRAN (R 4.2.0)
+ purrr        * 0.3.5    2022-10-06 [1] CRAN (R 4.2.0)
+ RCurl        * 1.98-1.9 2022-10-03 [1] CRAN (R 4.2.0)
+ readr        * 2.1.3    2022-10-01 [1] CRAN (R 4.2.0)
+ recipes      * 1.0.3    2022-11-09 [1] CRAN (R 4.2.0)
+ rsample      * 1.1.0    2022-08-08 [1] CRAN (R 4.2.0)
+ scales       * 1.2.1    2022-08-20 [1] CRAN (R 4.2.0)
+ tibble       * 3.1.8    2022-07-22 [1] CRAN (R 4.2.0)
+ tidymodels   * 1.0.0    2022-07-13 [1] CRAN (R 4.2.0)
+ tidyr        * 1.2.1    2022-09-08 [1] CRAN (R 4.2.0)
+ tune         * 1.0.1    2022-10-09 [1] CRAN (R 4.2.0)
+ workflows    * 1.1.2    2022-11-16 [1] CRAN (R 4.2.0)
+ workflowsets * 1.0.0    2022-07-12 [1] CRAN (R 4.2.0)
+ yardstick    * 1.1.0    2022-09-07 [1] CRAN (R 4.2.0)
 
  [1] /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/library
 
@@ -766,7 +647,6 @@ sigma 0.12762 0.00564
 </div>
 </div>
 
-</section>
 </section>
 
 <div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography">

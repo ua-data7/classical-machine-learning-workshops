@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.269">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Greg Chism">
+
+<title>Tidymodels: Preprocess your Data with Recipes</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
+
+
+<script src="TidyModels_Recipes_files/libs/clipboard/clipboard.min.js"></script>
+<script src="TidyModels_Recipes_files/libs/quarto-html/quarto.js"></script>
+<script src="TidyModels_Recipes_files/libs/quarto-html/popper.min.js"></script>
+<script src="TidyModels_Recipes_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="TidyModels_Recipes_files/libs/quarto-html/anchor.min.js"></script>
+<link href="TidyModels_Recipes_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="TidyModels_Recipes_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="TidyModels_Recipes_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="TidyModels_Recipes_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="TidyModels_Recipes_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#description" id="toc-description" class="nav-link active" data-scroll-target="#description">Description</a>
+  <ul class="collapse">
+  <li><a href="#objectives" id="toc-objectives" class="nav-link" data-scroll-target="#objectives">Objectives:</a></li>
+  </ul></li>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#university-of-arizona-test-trace-treat-covid-19-testing-results" id="toc-university-of-arizona-test-trace-treat-covid-19-testing-results" class="nav-link" data-scroll-target="#university-of-arizona-test-trace-treat-covid-19-testing-results">University of Arizona Test-Trace-Treat COVID-19 testing results</a>
+  <ul class="collapse">
+  <li><a href="#examine-the-data" id="toc-examine-the-data" class="nav-link" data-scroll-target="#examine-the-data">Examine the data</a></li>
+  </ul></li>
+  <li><a href="#data-splitting" id="toc-data-splitting" class="nav-link" data-scroll-target="#data-splitting">Data Splitting</a></li>
+  <li><a href="#create-recipe-and-roles" id="toc-create-recipe-and-roles" class="nav-link" data-scroll-target="#create-recipe-and-roles">Create Recipe and Roles</a></li>
+  <li><a href="#create-features" id="toc-create-features" class="nav-link" data-scroll-target="#create-features">Create Features</a></li>
+  <li><a href="#fit-a-model-with-a-recipe" id="toc-fit-a-model-with-a-recipe" class="nav-link" data-scroll-target="#fit-a-model-with-a-recipe">Fit a Model with a Recipe</a></li>
+  <li><a href="#use-a-trained-workflow-to-predict" id="toc-use-a-trained-workflow-to-predict" class="nav-link" data-scroll-target="#use-a-trained-workflow-to-predict">Use a Trained Workflow to Predict</a></li>
+  <li><a href="#session-information" id="toc-session-information" class="nav-link" data-scroll-target="#session-information">Session Information</a></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Tidymodels: Preprocess your Data with Recipes</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Greg Chism </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<div class="columns">
+<div class="column" style="width:50%;">
+<div class="quarto-figure quarto-figure-left">
+<figure class="figure">
+<p><img src="https://avatars0.githubusercontent.com/u/29100987?s=400&amp;v=4.png" class="img-fluid figure-img" alt="Image Credit: https://www.r-bloggers.com/2018/12/tidymodels/" width="200"></p>
+<p></p><figcaption class="figure-caption"><a href="https://www.r-bloggers.com/2018/12/tidymodels/">Image Credit</a></figcaption><p></p>
+</figure>
+</div>
+</div><div class="column" style="width:50%;">
+<div class="quarto-figure quarto-figure-left">
+<figure class="figure">
+<p><img src="https://gchism94.github.io/Data7_EDA_In_R_Workshops/cover.png" class="img-fluid figure-img" width="392"></p>
+</figure>
+</div>
+</div>
+</div>
+<section id="description" class="level2">
+<h2 class="anchored" data-anchor-id="description">Description</h2>
+<p>Python has taken most of the hype as the most widely used programming language for machine learning. This has left R users with a choice: 1. learn Python or 2. don’t do machine learning very well. Enter <a href="https://www.tidymodels.org/"><code>tidymodels</code></a>, Posit’s solution to machine learning in R, using a framework similar to the <a href="https://www.tidyverse.org/"><code>tidyverse</code></a>.</p>
+<p>In this session of the Classical Machine Learning workshop series, we preprocess our data to be used in a model using the <code>recipes</code> package from <code>tidymodels</code> in R. This is the a necessary step towards the more sophisticated models that we will deploy later in this series.</p>
+<p>This workshop borrows heavily from open source materials hosted on <a href="https://www.tidymodels.org/">tidymodels.org</a> found <a href="https://www.tidymodels.org/start/recipes/">here</a>. The author replaced the original <code>flights</code> data with <a href="https://arizona.figshare.com/articles/dataset/Data_for_Ecosystem_fluxes_during_drought_and_recovery_in_an_experimental_forest_/14632593/1">Meredith, Ladd, and Werner 2021</a> which is described below.</p>
+<section id="objectives" class="level3">
+<h3 class="anchored" data-anchor-id="objectives">Objectives:</h3>
+<ol type="1">
+<li>Load and examine data</li>
+<li>Build and fit a model</li>
+<li>Use a model to predict</li>
+<li>Model with different engines</li>
+</ol>
+<hr>
+</section>
+</section>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>In this article, we’ll explore another <code>tidymodels</code> package, <a href="https://recipes.tidymodels.org/">recipes</a>, which is designed to help you preprocess your data <em>before</em> training your model. Recipes are built as a series of preprocessing steps, such as:</p>
+<ul>
+<li><p>converting qualitative predictors to indicator variables (also known as dummy variables),</p></li>
+<li><p>transforming data to be on a different scale (e.g., taking the logarithm of a variable),</p></li>
+<li><p>transforming whole groups of predictors together,</p></li>
+<li><p>extracting key features from raw variables (e.g., getting the day of the week out of a date variable),</p></li>
+</ul>
+<p>and so on. If you are familiar with R’s formula interface, a lot of this might sound familiar and like what a formula already does. Recipes can be used to do many of the same things, but they have a much wider range of possibilities. This article shows how to use recipes for modeling.</p>
+<p>To use code in this article, you will need to install the following packages: <code>dlookr</code>, <code>RCurl</code>, and <code>tidymodels</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidymodels)  <span class="co"># for the parsnip package, along with the rest of tidymodels</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Attaching packages ────────────────────────────────────── tidymodels 1.0.0 ──</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>✔ broom        1.0.1      ✔ recipes      1.0.3 
+✔ dials        1.1.0      ✔ rsample      1.1.0 
+✔ dplyr        1.0.10     ✔ tibble       3.1.8 
+✔ ggplot2      3.4.0      ✔ tidyr        1.2.1 
+✔ infer        1.0.3      ✔ tune         1.0.1 
+✔ modeldata    1.0.1      ✔ workflows    1.1.2 
+✔ parsnip      1.0.3      ✔ workflowsets 1.0.0 
+✔ purrr        0.3.5      ✔ yardstick    1.1.0 </code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Conflicts ───────────────────────────────────────── tidymodels_conflicts() ──
+✖ purrr::discard() masks scales::discard()
+✖ dplyr::filter()  masks stats::filter()
+✖ dplyr::lag()     masks stats::lag()
+✖ recipes::step()  masks stats::step()
+• Learn how to get started at https://www.tidymodels.org/start/</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Helper packages</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dlookr)      <span class="co"># for variable summaries</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'dlookr'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:tidyr':
+
+    extract</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:base':
+
+    transform</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(RCurl)       <span class="co"># for reading in text files from a URL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'RCurl'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:tidyr':
+
+    complete</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_set</span>(<span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">14</span>)) </span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_update</span>(<span class="at">legend.position =</span> <span class="st">"right"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+</section>
+<section id="university-of-arizona-test-trace-treat-covid-19-testing-results" class="level2">
+<h2 class="anchored" data-anchor-id="university-of-arizona-test-trace-treat-covid-19-testing-results">University of Arizona Test-Trace-Treat COVID-19 testing results</h2>
+<p>Let’s use the data from <span class="citation" data-cites="merchant2022">(<a href="#ref-merchant2022" role="doc-biblioref">Merchant et al. 2022</a>)</span> which is is the archive for the University of Arizona Test, Trace, Treat (T3) clinical diagnostic tests (Antigen, TR-PCR: <code>test_type</code>) to determine whether an individual is currently infected with the COVID-19 virus.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Read in csv from the web</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">getURL</span>(<span class="st">"https://raw.githubusercontent.com/Gchism94/Data7_EDA_In_R_Workshops/main/Data7_EDA_In_R_Book/data/daily_summary.csv"</span>)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="at">text =</span> data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="examine-the-data" class="level3">
+<h3 class="anchored" data-anchor-id="examine-the-data">Examine the data</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>data <span class="sc">%&gt;%</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>() </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  result_date     affil_category test_type test_result test_count
+1  2020-08-04           Employee   Antigen    Negative          5
+2  2020-08-04           Employee   Antigen    Positive          0
+3  2020-08-04           Employee   Antigen    Negative          1
+4  2020-08-04           Employee   Antigen    Positive          0
+5  2020-08-04 Off-Campus Student   Antigen    Negative          9
+6  2020-08-04 Off-Campus Student   Antigen    Positive          1
+          test_source
+1       Campus Health
+2       Campus Health
+3 Test All Test Smart
+4 Test All Test Smart
+5       Campus Health
+6       Campus Health</code></pre>
+</div>
+</div>
+<p>For each test we know:</p>
+<ul>
+<li><code>result_date</code>: date in which the test result was on</li>
+</ul>
+<!-- -->
+<ul>
+<li><p><code>affil_category</code>: a testing individual’s affiliation with UArizona (Off-Campus Student, Employee, On-Campus Student, Other)</p></li>
+<li><p><code>test_type</code>: Antigen, PCR, or Antibody</p></li>
+<li><p><code>test_result</code>: result of the test (Positive or Negative)</p></li>
+<li><p><code>test_source</code>: where the test came from</p></li>
+<li><p><code>test_count</code>: the number of tests within the combination: <code>test_type</code>, <code>test_result</code>, <code>test_source</code>, <code>affil_category</code>, <code>result_date</code>.</p></li>
+</ul>
+<p>Let’s use this data to predict whether a positive COVID-19 test was more likely when testing happened more.</p>
+<p>We can see that there are exactly the same number of Positive and Negative values, but there are also inconclusive tests.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>data <span class="sc">%&gt;%</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(test_result) <span class="sc">%&gt;%</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">prop =</span> n<span class="sc">/</span><span class="fu">sum</span>(n)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   test_result    n        prop
+1 Inconclusive   30 0.003267974
+2     Negative 4575 0.498366013
+3     Positive 4575 0.498366013</code></pre>
+</div>
+</div>
+<p>Let’s remove the Inconclusive values because they are not relevant to our question and create a <code>date</code> R object column associated with <code>result_date</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>data_mod <span class="ot">&lt;-</span> </span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  data <span class="sc">%&gt;%</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(test_result <span class="sc">!=</span> <span class="st">"Inconclusive"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">test_result =</span> <span class="fu">factor</span>(test_result),</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">date =</span> lubridate<span class="sc">::</span><span class="fu">as_date</span>(result_date))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Before we start building up our recipe, let’s take a quick look at a few specific variables that will be important for both preprocessing and modeling.</p>
+<p>First, notice that we only have one numerical variable <code>test_count</code>, which is discrete. Also note that <code>test_result</code> is a factor variable; it is important that our outcome variable for training a logistic regression model is a factor.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(data_mod)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 9,150
+Columns: 7
+$ result_date    &lt;chr&gt; "2020-08-04", "2020-08-04", "2020-08-04", "2020-08-04",…
+$ affil_category &lt;chr&gt; "Employee", "Employee", "Employee", "Employee", "Off-Ca…
+$ test_type      &lt;chr&gt; "Antigen", "Antigen", "Antigen", "Antigen", "Antigen", …
+$ test_result    &lt;fct&gt; Negative, Positive, Negative, Positive, Negative, Posit…
+$ test_count     &lt;int&gt; 5, 0, 1, 0, 9, 1, 0, 1, 77, 0, 4, 0, 1, 0, 5, 0, 1, 0, …
+$ test_source    &lt;chr&gt; "Campus Health", "Campus Health", "Test All Test Smart"…
+$ date           &lt;date&gt; 2020-08-04, 2020-08-04, 2020-08-04, 2020-08-04, 2020-0…</code></pre>
+</div>
+</div>
+<p>Second, there are two variables that we don’t want to use as predictors in our model, but that we would like to retain as identification variables that can be used to troubleshoot poorly predicted data points. These are <code>test_source</code>, a factor value, and <code>result_date</code>, a date-time value.</p>
+<p>Third, there are 4 UArizona affiliations in <code>affil_category</code> and 3 distinct values in <code>test_type</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>data_mod <span class="sc">%&gt;%</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  dlookr<span class="sc">::</span><span class="fu">diagnose_category</span>(affil_category, test_type)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 7 × 6
+  variables      levels                 N  freq   ratio  rank
+  &lt;chr&gt;          &lt;chr&gt;              &lt;int&gt; &lt;int&gt;   &lt;dbl&gt; &lt;int&gt;
+1 affil_category Off-Campus Student  9150  3348 36.6        1
+2 affil_category Employee            9150  2984 32.6        2
+3 affil_category On-Campus Student   9150  2816 30.8        3
+4 affil_category Other               9150     2  0.0219     4
+5 test_type      Antigen             9150  4624 50.5        1
+6 test_type      PCR                 9150  4524 49.4        2
+7 test_type      Antibody            9150     2  0.0219     3</code></pre>
+</div>
+</div>
+<p>Because we’ll be using a simple logistic regression model, the variables <code>affil_category</code> and <code>test_type</code> will be converted to <a href="https://bookdown.org/max/FES/creating-dummy-variables-for-unordered-categories.html">dummy variables</a>. However, some of these values do not occur as frequently and this could complicate our analysis. We’ll discuss specific steps later in this article that we can add to our recipe to address this issue before modeling.</p>
+<hr>
+</section>
+</section>
+<section id="data-splitting" class="level2">
+<h2 class="anchored" data-anchor-id="data-splitting">Data Splitting</h2>
+<p>To get started, let’s split this single dataset into two: a <em>training</em> set and a <em>testing</em> set. We’ll keep most of the rows in the original dataset (subset chosen randomly) in the <em>training</em> set. The training data will be used to <em>fit</em> the model, and the <em>testing</em> set will be used to measure model performance.</p>
+<p>To do this, we can use the <a href="https://rsample.tidymodels.org/">rsample</a> package to create an object that contains the information on <em>how</em> to split the data, and then two more rsample functions to create data frames for the training and testing sets:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fix the random numbers by setting the seed </span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="co"># This enables the analysis to be reproducible when random numbers are used</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">222</span>)</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Put 3/4 of the data into the training set </span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>data_split <span class="ot">&lt;-</span> <span class="fu">initial_split</span>(data_mod, <span class="at">prop =</span> <span class="dv">3</span><span class="sc">/</span><span class="dv">4</span>)</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Create data frames for the two sets:</span></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>train_data <span class="ot">&lt;-</span> <span class="fu">training</span>(data_split)</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>test_data <span class="ot">&lt;-</span> <span class="fu">testing</span>(data_split)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+</section>
+<section id="create-recipe-and-roles" class="level2">
+<h2 class="anchored" data-anchor-id="create-recipe-and-roles">Create Recipe and Roles</h2>
+<p>To get started, let’s create a recipe for a simple logistic regression model. Before training the model, we can use a recipe to create a few new predictors and conduct some preprocessing required by the model.</p>
+<p>Let’s initiate a new recipe:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>covid_rec <span class="ot">&lt;-</span> </span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">recipe</span>(test_result <span class="sc">~</span> ., <span class="at">data =</span> train_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The <a href="https://recipes.tidymodels.org/reference/recipe.html"><code>recipe()</code> function</a> as we used it here has two arguments:</p>
+<ul>
+<li><p>A <strong>formula</strong>. Any variable on the left-hand side of the tilde (<code>~</code>) is considered the model outcome (here, <code>test_result</code>). On the right-hand side of the tilde are the predictors. Variables may be listed by name, or you can use the dot (<code>.</code>) to indicate all other variables as predictors.</p></li>
+<li><p>The <strong>data</strong>. A recipe is associated with the data set used to create the model. This will typically be the <em>training</em> set, so <code>data = train_data</code> here. Naming a data set doesn’t actually change the data itself; it is only used to catalog the names of the variables and their types, like factors, integers, dates, etc.</p></li>
+</ul>
+<p>Now we can add <a href="https://recipes.tidymodels.org/reference/roles.html">roles</a> to this recipe. We can use the <a href="https://recipes.tidymodels.org/reference/roles.html"><code>update_role()</code> function</a> to let recipes know that <code>test_source</code> and <code>date</code> are variables with a custom role that we called <code>"ID"</code> (a role can have any character value). Whereas our formula included all variables in the training set other than <code>test_result</code> as predictors, this tells the recipe to keep these two variables but not use them as either outcomes or predictors.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>covid_rec <span class="ot">&lt;-</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">recipe</span>(test_result <span class="sc">~</span> ., <span class="at">data =</span> train_data) <span class="sc">%&gt;%</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">update_role</span>(test_source, result_date, <span class="at">new_role =</span> <span class="st">"ID"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>This step of adding roles to a recipe is optional; the purpose of using it here is that those two variables can be retained in the data but not included in the model. This can be convenient when, after the model is fit, we want to investigate some poorly predicted value. These ID columns will be available and can be used to try to understand what went wrong.</p>
+<p>To get the current set of variables and roles, use the <code>summary()</code> function:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(covid_rec)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 7 × 4
+  variable       type      role      source  
+  &lt;chr&gt;          &lt;list&gt;    &lt;chr&gt;     &lt;chr&gt;   
+1 result_date    &lt;chr [3]&gt; ID        original
+2 affil_category &lt;chr [3]&gt; predictor original
+3 test_type      &lt;chr [3]&gt; predictor original
+4 test_count     &lt;chr [2]&gt; predictor original
+5 test_source    &lt;chr [3]&gt; ID        original
+6 date           &lt;chr [1]&gt; predictor original
+7 test_result    &lt;chr [3]&gt; outcome   original</code></pre>
+</div>
+</div>
+<hr>
+</section>
+<section id="create-features" class="level2">
+<h2 class="anchored" data-anchor-id="create-features">Create Features</h2>
+<p>Now we can start adding steps onto our recipe using the pipe operator. Perhaps it is reasonable for the date of the flight to have an effect on the likelihood of a late arrival. A little bit of <strong>feature engineering</strong> might go a long way to improving our model. How should the date be encoded into the model? The <code>date</code> column has an R <code>date</code> object so including that column “as is” will mean that the model will convert it to a numeric format equal to the number of days after a reference date:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>data_mod <span class="sc">%&gt;%</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(result_date) <span class="sc">%&gt;%</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">numeric_date =</span> <span class="fu">as.numeric</span>(result_date)) <span class="sc">%&gt;%</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  result_date numeric_date
+1  2020-08-04           NA
+2  2020-08-05           NA
+3  2020-08-06           NA
+4  2020-08-07           NA
+5  2020-08-09           NA
+6  2020-08-10           NA</code></pre>
+</div>
+</div>
+<p>It’s possible that the numeric date variable is a good option for modeling; perhaps the model would benefit from a linear trend between the log-odds of a Positive COVID-19 test and the numeric date variable. However, it might be better to add model terms <em>derived</em> from the date that have a better potential to be important to the model. For example, we could derive the following meaningful features from the single <code>date</code> variable:</p>
+<ul>
+<li><p>the day of the week,</p></li>
+<li><p>the month, and</p></li>
+<li><p>whether or not the date corresponds to a holiday.</p></li>
+</ul>
+<p>Let’s do all three of these by adding steps to our recipe:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>covid_rec <span class="ot">&lt;-</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">recipe</span>(test_result <span class="sc">~</span> ., <span class="at">data =</span> train_data) <span class="sc">%&gt;%</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">update_role</span>(test_source, result_date, <span class="at">new_role =</span> <span class="st">"ID"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_date</span>(date, <span class="at">features =</span> <span class="fu">c</span>(<span class="st">"dow"</span>, <span class="st">"month"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_holiday</span>(date, </span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>               <span class="at">holidays =</span> timeDate<span class="sc">::</span><span class="fu">listHolidays</span>(<span class="st">"US"</span>), </span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>               <span class="at">keep_original_cols =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>What do each of these steps do?</p>
+<ul>
+<li><p>With <a href="https://recipes.tidymodels.org/reference/step_date.html"><code>step_date()</code></a>, we created two new factor columns with the appropriate day of the week and the month.</p></li>
+<li><p>With <a href="https://recipes.tidymodels.org/reference/step_holiday.html"><code>step_holiday()</code></a>, we created a binary variable indicating whether the current date is a holiday or not. The argument value of <code>timeDate::listHolidays("US")</code> uses the <a href="https://cran.r-project.org/web/packages/timeDate/index.html">timeDate package</a> to list the 17 standard US holidays.</p></li>
+<li><p>With <code>keep_original_cols = FALSE</code>, we remove the original <code>date</code> variable since we no longer want it in the model. Many recipe steps that create new variables have this argument.</p></li>
+</ul>
+<p>Next, we’ll turn our attention to the variable types of our predictors. Because we plan to train a logistic regression model, we know that predictors will ultimately need to be numeric, as opposed to nominal data like strings and factor variables. In other words, there may be a difference in how we store our data (in factors inside a data frame), and how the underlying equations require them (a purely numeric matrix).</p>
+<p>For factors like <code>affil_category</code> and <code>test_type</code>, <a href="https://bookdown.org/max/FES/creating-dummy-variables-for-unordered-categories.html">standard practice</a> is to convert them into <em>dummy</em> or <em>indicator</em> variables to make them numeric. These are binary values for each level of the factor. For example, our <code>test_type</code> variable has values of <code>"Antigen"</code>, <code>"PCR"</code>, and <code>"Antibody"</code>. The standard dummy variable encoding, shown below, will create <em>two</em> numeric columns of the data that are 1 when the originating airport is <code>"PCR"</code> or <code>"Antibody"</code> and zero otherwise, respectively.</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th>test_type</th>
+<th>test_type_PCR</th>
+<th>test_type_Antibody</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>PCR</td>
+<td>1</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td>Antigen</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td>Antibody</td>
+<td>0</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<p>But, unlike the standard model formula methods in R, a recipe <strong>does not</strong> automatically create these dummy variables for you; you’ll need to tell your recipe to add this step. This is for two reasons. First, many models do not require <a href="https://bookdown.org/max/FES/categorical-trees.html">numeric predictors</a>, so dummy variables may not always be preferred. Second, recipes can also be used for purposes outside of modeling, where non-dummy versions of the variables may work better. For example, you may want to make a table or a plot with a variable as a single factor. For those reasons, you need to explicitly tell recipes to create dummy variables using <code>step_dummy()</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>covid_rec <span class="ot">&lt;-</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">recipe</span>(test_result <span class="sc">~</span> ., <span class="at">data =</span> train_data) <span class="sc">%&gt;%</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">update_role</span>(test_source, result_date, <span class="at">new_role =</span> <span class="st">"ID"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_date</span>(date, <span class="at">features =</span> <span class="fu">c</span>(<span class="st">"dow"</span>, <span class="st">"month"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_holiday</span>(date, </span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>               <span class="at">holidays =</span> timeDate<span class="sc">::</span><span class="fu">listHolidays</span>(<span class="st">"US"</span>), </span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>               <span class="at">keep_original_cols =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_dummy</span>(<span class="fu">all_nominal_predictors</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Here, we did something different than before: instead of applying a step to an individual variable, we used <a href="https://recipes.tidymodels.org/reference/selections.html">selectors</a> to apply this recipe step to several variables at once, <code>all_nominal_predictors()</code>. The <a href="https://recipes.tidymodels.org/reference/selections.html">selector functions</a> can be combined to select intersections of variables.</p>
+<p>At this stage in the recipe, this step selects the <code>affil_category</code> and <code>test_type</code> variables. It also includes two new variables, <code>date_dow</code> and <code>date_month</code>, that were created by the earlier <code>step_date()</code>.</p>
+<p>More generally, the recipe selectors mean that you don’t always have to apply steps to individual variables one at a time. Since a recipe knows the <em>variable type</em> and <em>role</em> of each column, they can also be selected (or dropped) using this information.</p>
+<p>We need one final step to add to our recipe. Since <code>affil_category</code> and <code>test_type</code> have some infrequently occurring factor values, it is possible that dummy variables might be created for values that don’t exist in the training set. Thankfully, we don’t see this problem with, for example, <code>affil_category</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>test_data <span class="sc">%&gt;%</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(affil_category) <span class="sc">%&gt;%</span></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">anti_join</span>(train_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Joining, by = "affil_category"</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] affil_category
+&lt;0 rows&gt; (or 0-length row.names)</code></pre>
+</div>
+</div>
+<p>When the recipe is applied to the training set, a column is made for each of the factor levels come from <code>data</code> (not the training set), but this column may contain all zeros if each factor is not represented in both the training and testing data. This would a “zero-variance predictor” that has no information within the column. While some R functions will not produce an error for such predictors, it usually causes warnings and other issues. <code>step_zv()</code> will remove columns from the data when the training set data have a single value, so it is added to the recipe <em>after</em> <code>step_dummy()</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>covid_rec <span class="ot">&lt;-</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">recipe</span>(test_result <span class="sc">~</span> ., <span class="at">data =</span> train_data) <span class="sc">%&gt;%</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">update_role</span>(test_source, result_date, <span class="at">new_role =</span> <span class="st">"ID"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_date</span>(date, <span class="at">features =</span> <span class="fu">c</span>(<span class="st">"dow"</span>, <span class="st">"month"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_holiday</span>(date, </span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>               <span class="at">holidays =</span> timeDate<span class="sc">::</span><span class="fu">listHolidays</span>(<span class="st">"US"</span>), </span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>               <span class="at">keep_original_cols =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_dummy</span>(<span class="fu">all_nominal_predictors</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># shouldn't change anything, but good practice to include</span></span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_zv</span>(<span class="fu">all_predictors</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Now we’ve created a <em>specification</em> of what should be done with the data. How do we use the recipe we made?</p>
+<hr>
+</section>
+<section id="fit-a-model-with-a-recipe" class="level2">
+<h2 class="anchored" data-anchor-id="fit-a-model-with-a-recipe">Fit a Model with a Recipe</h2>
+<p>Let’s use logistic regression to model the COVID-19 testing data. As we saw in <a href="https://gchism.quarto.pub/tidymodels-build-a-model/"><em>Build a Model</em></a>, we start by <a href="https://www.tidymodels.org/start/models/#build-model">building a model specification</a> using the parsnip package:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>lr_mod <span class="ot">&lt;-</span> </span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">logistic_reg</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_engine</span>(<span class="st">"glm"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We will want to use our recipe across several steps as we train and test our model. We will:</p>
+<ol type="1">
+<li><p><strong>Process the recipe using the training set</strong>: This involves any estimation or calculations based on the training set. For our recipe, the training set will be used to determine which predictors should be converted to dummy variables and which predictors will have zero-variance in the training set, and should be slated for removal.</p></li>
+<li><p><strong>Apply the recipe to the training set</strong>: We create the final predictor set on the training set.</p></li>
+<li><p><strong>Apply the recipe to the test set</strong>: We create the final predictor set on the test set. Nothing is recomputed and no information from the test set is used here; the dummy variable and zero-variance results from the training set are applied to the test set.</p></li>
+</ol>
+<p>To simplify this process, we can use a <em>model workflow</em>, which pairs a model and recipe together. This is a straightforward approach because different recipes are often needed for different models, so when a model and recipe are bundled, it becomes easier to train and test <em>workflows</em>. We’ll use the <a href="https://workflows.tidymodels.org/">workflows package</a> from tidymodels to bundle our parsnip model (<code>lr_mod</code>) with our recipe (<code>covid_rec</code>).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>covid_wflow <span class="ot">&lt;-</span> </span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">workflow</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_model</span>(lr_mod) <span class="sc">%&gt;%</span> </span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_recipe</span>(covid_rec)</span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>covid_wflow</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>══ Workflow ════════════════════════════════════════════════════════════════════
+Preprocessor: Recipe
+Model: logistic_reg()
+
+── Preprocessor ────────────────────────────────────────────────────────────────
+4 Recipe Steps
+
+• step_date()
+• step_holiday()
+• step_dummy()
+• step_zv()
+
+── Model ───────────────────────────────────────────────────────────────────────
+Logistic Regression Model Specification (classification)
+
+Computational engine: glm </code></pre>
+</div>
+</div>
+<p>Now, there is a single function that can be used to prepare the recipe and train the model from the resulting predictors:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>covid_fit <span class="ot">&lt;-</span> </span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>  covid_wflow <span class="sc">%&gt;%</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fit</span>(<span class="at">data =</span> train_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</code></pre>
+</div>
+</div>
+<p>This object has the finalized recipe and fitted model objects inside. You may want to extract the model or recipe objects from the workflow. To do this, you can use the helper functions <code>extract_fit_parsnip()</code> and <code>extract_recipe()</code>. For example, here we pull the fitted model object then use the <code>broom::tidy()</code> function to get a tidy tibble of model coefficients:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>covid_fit <span class="sc">%&gt;%</span> </span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">extract_fit_parsnip</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tidy</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 36 × 5
+   term                     estimate std.error statistic   p.value
+   &lt;chr&gt;                       &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
+ 1 (Intercept)               11.8    197.         0.0601 9.52e-  1
+ 2 test_count                -0.137    0.00606  -22.6    5.18e-113
+ 3 date_USColumbusDay         0.0285   0.480      0.0594 9.53e-  1
+ 4 date_USCPulaskisBirthday   0.0355   0.513      0.0693 9.45e-  1
+ 5 date_USElectionDay         0.0333   0.432      0.0770 9.39e-  1
+ 6 date_USGoodFriday         -0.181    0.500     -0.363  7.16e-  1
+ 7 date_USInaugurationDay    -0.102    0.484     -0.210  8.34e-  1
+ 8 date_USLincolnsBirthday    0.264    0.674      0.393  6.95e-  1
+ 9 date_USMLKingsBirthday     4.72     7.25       0.652  5.15e-  1
+10 date_USNewYearsDay        -1.54     1.31      -1.17   2.42e-  1
+# … with 26 more rows</code></pre>
+</div>
+</div>
+<hr>
+</section>
+<section id="use-a-trained-workflow-to-predict" class="level2">
+<h2 class="anchored" data-anchor-id="use-a-trained-workflow-to-predict">Use a Trained Workflow to Predict</h2>
+<p>Our goal was to predict whether more testing led to more positive results. We have just:</p>
+<ol type="1">
+<li><p>Built the model (<code>lr_mod</code>),</p></li>
+<li><p>Created a preprocessing recipe (<code>covid_rec</code>),</p></li>
+<li><p>Bundled the model and recipe (<code>covid_wflow</code>), and</p></li>
+<li><p>Trained our workflow using a single call to <code>fit()</code>.</p></li>
+</ol>
+<p>The next step is to use the trained workflow (<code>covid_fit</code>) to predict with the unseen test data, which we will do with a single call to <code>predict()</code>. The <code>predict()</code> method applies the recipe to the new data, then passes them to the fitted model.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="fu">predict</span>(covid_fit, test_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2,288 × 1
+   .pred_class
+   &lt;fct&gt;      
+ 1 Negative   
+ 2 Positive   
+ 3 Positive   
+ 4 Positive   
+ 5 Negative   
+ 6 Positive   
+ 7 Negative   
+ 8 Positive   
+ 9 Positive   
+10 Negative   
+# … with 2,278 more rows</code></pre>
+</div>
+</div>
+<p>Because our outcome variable here is a factor, the output from <code>predict()</code> returns the predicted class: <code>Negative</code> versus <code>Positive</code>. But, let’s say we want the predicted class probabilities for each <code>test_source</code> instead. To return those, we can specify <code>type = "prob"</code> when we use <code>predict()</code> or use <code>augment()</code> with the model plus test data to save them together:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>covid_aug <span class="ot">&lt;-</span> </span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">augment</span>(covid_fit, test_data)</span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a><span class="co"># The data looks like:</span></span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>covid_aug <span class="sc">%&gt;%</span></span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(test_count, result_date, test_source, .pred_class, .pred_Positive) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2,288 × 5
+   test_count result_date test_source         .pred_class .pred_Positive
+        &lt;int&gt; &lt;chr&gt;       &lt;chr&gt;               &lt;fct&gt;                &lt;dbl&gt;
+ 1          5 2020-08-04  Campus Health       Negative          4.77e- 1
+ 2          1 2020-08-04  Test All Test Smart Positive          6.12e- 1
+ 3          0 2020-08-04  Test All Test Smart Positive          6.44e- 1
+ 4          0 2020-08-04  Campus Health       Positive          7.62e- 1
+ 5         77 2020-08-04  Test All Test Smart Negative          4.45e- 5
+ 6          0 2020-08-05  Campus Health       Positive          7.10e- 1
+ 7        168 2020-08-05  Test All Test Smart Negative          1.65e-10
+ 8          0 2020-08-06  Campus Health       Positive          6.32e- 1
+ 9          0 2020-08-06  Campus Health       Positive          7.52e- 1
+10          6 2020-08-07  Campus Health       Negative          4.26e- 1
+# … with 2,278 more rows</code></pre>
+</div>
+</div>
+<p>Now that we have a tibble with our predicted class probabilities, how will we evaluate the performance of our workflow? We can see from these first few rows that our model predicted these 5 on time flights correctly because the values of <code>.pred_on_time</code> are <span class="math inline">\(p &gt; .50\)</span>. But we also know that we have 2,288 rows total to predict. We would like to calculate a metric that tells how well our model predicted late arrivals, compared to the true status of our outcome variable, <code>test_result</code>.</p>
+<p>Let’s use the area under the <a href="https://bookdown.org/max/FES/measuring-performance.html#class-metrics">ROC curve</a> as our metric, computed using <code>roc_curve()</code> and <code>roc_auc()</code> from the <a href="https://yardstick.tidymodels.org/">yardstick package</a>.</p>
+<p>To generate a ROC curve, we need the predicted class probabilities for <code>Positive</code> and <code>Negative</code>, which we just calculated in the code chunk above. We can create the ROC curve with these values, using <code>roc_curve()</code> and then piping to the <code>autoplot()</code> method:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>covid_aug <span class="sc">%&gt;%</span></span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">roc_curve</span>(<span class="at">truth =</span> test_result, .pred_Positive) <span class="sc">%&gt;%</span></span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">autoplot</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="TidyModels_Recipes_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Similarly, <code>roc_auc()</code> estimates the area under the curve:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>covid_aug <span class="sc">%&gt;%</span></span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">roc_auc</span>(<span class="at">truth =</span> test_result, .pred_Positive) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 3
+  .metric .estimator .estimate
+  &lt;chr&gt;   &lt;chr&gt;          &lt;dbl&gt;
+1 roc_auc binary         0.121</code></pre>
+</div>
+</div>
+<p>Not too bad! We leave it to the reader to test out this workflow <a href="https://workflows.tidymodels.org/reference/add_formula.html"><em>without</em></a> this recipe. You can use <code>workflows::add_formula(test_result ~ .)</code> instead of <code>add_recipe()</code> (remember to remove the identification variables first!), and see whether our recipe improved our model’s ability to predict late arrivals.</p>
+<hr>
+</section>
+<section id="session-information" class="level2">
+<h2 class="anchored" data-anchor-id="session-information">Session Information</h2>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>─ Session info ───────────────────────────────────────────────────────────────
+ setting  value
+ version  R version 4.2.1 (2022-06-23)
+ os       macOS Monterey 12.2
+ system   aarch64, darwin20
+ ui       X11
+ language (EN)
+ collate  en_US.UTF-8
+ ctype    en_US.UTF-8
+ tz       America/Phoenix
+ date     2023-01-26
+ pandoc   2.19.2 @ /Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/ (via rmarkdown)
+
+─ Packages ───────────────────────────────────────────────────────────────────
+ package      * version  date (UTC) lib source
+ broom        * 1.0.1    2022-08-29 [1] CRAN (R 4.2.0)
+ dials        * 1.1.0    2022-11-04 [1] CRAN (R 4.2.0)
+ dlookr       * 0.6.0    2022-06-07 [1] CRAN (R 4.2.0)
+ dplyr        * 1.0.10   2022-09-01 [1] CRAN (R 4.2.1)
+ ggplot2      * 3.4.0    2022-11-04 [1] CRAN (R 4.2.0)
+ infer        * 1.0.3    2022-08-22 [1] CRAN (R 4.2.0)
+ modeldata    * 1.0.1    2022-09-06 [1] CRAN (R 4.2.0)
+ parsnip      * 1.0.3    2022-11-11 [1] CRAN (R 4.2.0)
+ purrr        * 0.3.5    2022-10-06 [1] CRAN (R 4.2.0)
+ RCurl        * 1.98-1.9 2022-10-03 [1] CRAN (R 4.2.0)
+ recipes      * 1.0.3    2022-11-09 [1] CRAN (R 4.2.0)
+ rsample      * 1.1.0    2022-08-08 [1] CRAN (R 4.2.0)
+ scales       * 1.2.1    2022-08-20 [1] CRAN (R 4.2.0)
+ tibble       * 3.1.8    2022-07-22 [1] CRAN (R 4.2.0)
+ tidymodels   * 1.0.0    2022-07-13 [1] CRAN (R 4.2.0)
+ tidyr        * 1.2.1    2022-09-08 [1] CRAN (R 4.2.0)
+ tune         * 1.0.1    2022-10-09 [1] CRAN (R 4.2.0)
+ workflows    * 1.1.2    2022-11-16 [1] CRAN (R 4.2.0)
+ workflowsets * 1.0.0    2022-07-12 [1] CRAN (R 4.2.0)
+ yardstick    * 1.1.0    2022-09-07 [1] CRAN (R 4.2.0)
+
+ [1] /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/library
+
+──────────────────────────────────────────────────────────────────────────────</code></pre>
+</div>
+</div>
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography">
+<div id="ref-merchant2022" class="csl-entry" role="doc-biblioentry">
+Merchant, Nirav C, Jim Davis, George H Franks, Chun Ly, Fernando Rios, Todd Wickizer, Gary D Windham, and Michelle Yung. 2022. <span>“University of Arizona Test-Trace-Treat COVID-19 Testing Results.”</span> University of Arizona Research Data Repository. <a href="https://doi.org/10.25422/AZU.DATA.14869740.V3">https://doi.org/10.25422/AZU.DATA.14869740.V3</a>.
+</div>
+</div></section></div></main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

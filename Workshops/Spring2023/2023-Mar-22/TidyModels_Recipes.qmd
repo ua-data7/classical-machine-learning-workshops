@@ -1,0 +1,395 @@
+---
+title: "Tidymodels: Preprocess your Data with Recipes"
+author: Greg Chism
+format:
+  html:
+    theme: cosmo
+    code-copy: true
+    toc: true
+editor: visual
+bibliography: references.bib
+---
+
+::: columns
+::: {.column width="50%"}
+![[Image Credit](https://www.r-bloggers.com/2018/12/tidymodels/)](https://avatars0.githubusercontent.com/u/29100987?s=400&v=4){alt="Image Credit: https://www.r-bloggers.com/2018/12/tidymodels/" fig-align="left" width="200"}
+:::
+
+::: {.column width="50%"}
+![](https://gchism94.github.io/Data7_EDA_In_R_Workshops/cover.png){fig-align="left" width="392"}
+:::
+:::
+
+## Description
+
+Python has taken most of the hype as the most widely used programming language for machine learning. This has left R users with a choice: 1. learn Python or 2. don't do machine learning very well. Enter [`tidymodels`](https://www.tidymodels.org/), Posit's solution to machine learning in R, using a framework similar to the [`tidyverse`](https://www.tidyverse.org/).
+
+In this session of the Classical Machine Learning workshop series, we preprocess our data to be used in a model using the `recipes` package from `tidymodels` in R. This is the a necessary step towards the more sophisticated models that we will deploy later in this series.
+
+This workshop borrows heavily from open source materials hosted on [tidymodels.org](https://www.tidymodels.org/) found [here](https://www.tidymodels.org/start/recipes/). The author replaced the original `flights` data with [Meredith, Ladd, and Werner 2021](https://arizona.figshare.com/articles/dataset/Data_for_Ecosystem_fluxes_during_drought_and_recovery_in_an_experimental_forest_/14632593/1) which is described below.
+
+### Objectives:
+
+1.  Load and examine data
+2.  Build and fit a model
+3.  Use a model to predict
+4.  Model with different engines
+
+------------------------------------------------------------------------
+
+## Introduction
+
+In this article, we'll explore another `tidymodels` package, [recipes](https://recipes.tidymodels.org/), which is designed to help you preprocess your data *before* training your model. Recipes are built as a series of preprocessing steps, such as:
+
+-   converting qualitative predictors to indicator variables (also known as dummy variables),
+
+-   transforming data to be on a different scale (e.g., taking the logarithm of a variable),
+
+-   transforming whole groups of predictors together,
+
+-   extracting key features from raw variables (e.g., getting the day of the week out of a date variable),
+
+and so on. If you are familiar with R's formula interface, a lot of this might sound familiar and like what a formula already does. Recipes can be used to do many of the same things, but they have a much wider range of possibilities. This article shows how to use recipes for modeling.
+
+To use code in this article, you will need to install the following packages: `dlookr`, `RCurl`, and `tidymodels`.
+
+```{r}
+library(tidymodels)  # for the parsnip package, along with the rest of tidymodels
+
+# Helper packages
+library(dlookr)      # for variable summaries
+library(RCurl)       # for reading in text files from a URL
+theme_set(theme_minimal(base_size = 14)) 
+theme_update(legend.position = "right")
+```
+
+------------------------------------------------------------------------
+
+## University of Arizona Test-Trace-Treat COVID-19 testing results
+
+Let's use the data from [@merchant2022] which is is the archive for the University of Arizona Test, Trace, Treat (T3) clinical diagnostic tests (Antigen, TR-PCR: `test_type`) to determine whether an individual is currently infected with the COVID-19 virus.
+
+```{r}
+# Read in csv from the web
+data <- getURL("https://raw.githubusercontent.com/Gchism94/Data7_EDA_In_R_Workshops/main/Data7_EDA_In_R_Book/data/daily_summary.csv")
+data <- read.csv(text = data)
+```
+
+### Examine the data
+
+```{r}
+data %>%
+  head() 
+```
+
+For each test we know:
+
+-   `result_date`: date in which the test result was on
+
+<!-- -->
+
+-   `affil_category`: a testing individual's affiliation with UArizona (Off-Campus Student, Employee, On-Campus Student, Other)
+
+-   `test_type`: Antigen, PCR, or Antibody
+
+-   `test_result`: result of the test (Positive or Negative)
+
+-   `test_source`: where the test came from
+
+-   `test_count`: the number of tests within the combination: `test_type`, `test_result`, `test_source`, `affil_category`, `result_date`.
+
+Let's use this data to predict whether a positive COVID-19 test was more likely when testing happened more.
+
+We can see that there are exactly the same number of Positive and Negative values, but there are also inconclusive tests.
+
+```{r}
+data %>%
+  count(test_result) %>%
+  mutate(prop = n/sum(n)) 
+```
+
+Let's remove the Inconclusive values because they are not relevant to our question and create a `date` R object column associated with `result_date`.
+
+```{r}
+data_mod <- 
+  data %>%
+  filter(test_result != "Inconclusive") %>%
+  mutate(test_result = factor(test_result),
+         date = lubridate::as_date(result_date))
+```
+
+Before we start building up our recipe, let's take a quick look at a few specific variables that will be important for both preprocessing and modeling.
+
+First, notice that we only have one numerical variable `test_count`, which is discrete. Also note that `test_result` is a factor variable; it is important that our outcome variable for training a logistic regression model is a factor.
+
+```{r}
+glimpse(data_mod)
+```
+
+Second, there are two variables that we don't want to use as predictors in our model, but that we would like to retain as identification variables that can be used to troubleshoot poorly predicted data points. These are `test_source`, a factor value, and `result_date`, a date-time value.
+
+Third, there are 4 UArizona affiliations in `affil_category` and 3 distinct values in `test_type`.
+
+```{r}
+data_mod %>%
+  dlookr::diagnose_category(affil_category, test_type)
+```
+
+Because we'll be using a simple logistic regression model, the variables `affil_category` and `test_type` will be converted to [dummy variables](https://bookdown.org/max/FES/creating-dummy-variables-for-unordered-categories.html). However, some of these values do not occur as frequently and this could complicate our analysis. We'll discuss specific steps later in this article that we can add to our recipe to address this issue before modeling.
+
+------------------------------------------------------------------------
+
+## Data Splitting
+
+To get started, let's split this single dataset into two: a *training* set and a *testing* set. We'll keep most of the rows in the original dataset (subset chosen randomly) in the *training* set. The training data will be used to *fit* the model, and the *testing* set will be used to measure model performance.
+
+To do this, we can use the [rsample](https://rsample.tidymodels.org/) package to create an object that contains the information on *how* to split the data, and then two more rsample functions to create data frames for the training and testing sets:
+
+```{r}
+# Fix the random numbers by setting the seed 
+# This enables the analysis to be reproducible when random numbers are used
+set.seed(222)
+# Put 3/4 of the data into the training set 
+data_split <- initial_split(data_mod, prop = 3/4)
+
+# Create data frames for the two sets:
+train_data <- training(data_split)
+test_data <- testing(data_split)
+```
+
+------------------------------------------------------------------------
+
+## Create Recipe and Roles
+
+To get started, let's create a recipe for a simple logistic regression model. Before training the model, we can use a recipe to create a few new predictors and conduct some preprocessing required by the model.
+
+Let's initiate a new recipe:
+
+```{r}
+covid_rec <- 
+  recipe(test_result ~ ., data = train_data)
+```
+
+The [`recipe()` function](https://recipes.tidymodels.org/reference/recipe.html) as we used it here has two arguments:
+
+-   A **formula**. Any variable on the left-hand side of the tilde (`~`) is considered the model outcome (here, `test_result`). On the right-hand side of the tilde are the predictors. Variables may be listed by name, or you can use the dot (`.`) to indicate all other variables as predictors.
+
+-   The **data**. A recipe is associated with the data set used to create the model. This will typically be the *training* set, so `data = train_data` here. Naming a data set doesn't actually change the data itself; it is only used to catalog the names of the variables and their types, like factors, integers, dates, etc.
+
+Now we can add [roles](https://recipes.tidymodels.org/reference/roles.html) to this recipe. We can use the [`update_role()` function](https://recipes.tidymodels.org/reference/roles.html) to let recipes know that `test_source` and `date` are variables with a custom role that we called `"ID"` (a role can have any character value). Whereas our formula included all variables in the training set other than `test_result` as predictors, this tells the recipe to keep these two variables but not use them as either outcomes or predictors.
+
+```{r}
+covid_rec <-
+  recipe(test_result ~ ., data = train_data) %>%
+  update_role(test_source, result_date, new_role = "ID")
+```
+
+This step of adding roles to a recipe is optional; the purpose of using it here is that those two variables can be retained in the data but not included in the model. This can be convenient when, after the model is fit, we want to investigate some poorly predicted value. These ID columns will be available and can be used to try to understand what went wrong.
+
+To get the current set of variables and roles, use the `summary()` function:
+
+```{r}
+summary(covid_rec)
+```
+
+------------------------------------------------------------------------
+
+## Create Features
+
+Now we can start adding steps onto our recipe using the pipe operator. Perhaps it is reasonable for the date of the flight to have an effect on the likelihood of a late arrival. A little bit of **feature engineering** might go a long way to improving our model. How should the date be encoded into the model? The `date` column has an R `date` object so including that column "as is" will mean that the model will convert it to a numeric format equal to the number of days after a reference date:
+
+```{r}
+data_mod %>%
+  distinct(result_date) %>%
+  mutate(numeric_date = as.numeric(result_date)) %>%
+  head()
+```
+
+It's possible that the numeric date variable is a good option for modeling; perhaps the model would benefit from a linear trend between the log-odds of a Positive COVID-19 test and the numeric date variable. However, it might be better to add model terms *derived* from the date that have a better potential to be important to the model. For example, we could derive the following meaningful features from the single `date` variable:
+
+-   the day of the week,
+
+-   the month, and
+
+-   whether or not the date corresponds to a holiday.
+
+Let's do all three of these by adding steps to our recipe:
+
+```{r}
+covid_rec <-
+  recipe(test_result ~ ., data = train_data) %>%
+  update_role(test_source, result_date, new_role = "ID") %>%
+  step_date(date, features = c("dow", "month")) %>%
+  step_holiday(date, 
+               holidays = timeDate::listHolidays("US"), 
+               keep_original_cols = FALSE)
+```
+
+What do each of these steps do?
+
+-   With [`step_date()`](https://recipes.tidymodels.org/reference/step_date.html), we created two new factor columns with the appropriate day of the week and the month.
+
+-   With [`step_holiday()`](https://recipes.tidymodels.org/reference/step_holiday.html), we created a binary variable indicating whether the current date is a holiday or not. The argument value of `timeDate::listHolidays("US")` uses the [timeDate package](https://cran.r-project.org/web/packages/timeDate/index.html) to list the 17 standard US holidays.
+
+-   With `keep_original_cols = FALSE`, we remove the original `date` variable since we no longer want it in the model. Many recipe steps that create new variables have this argument.
+
+Next, we'll turn our attention to the variable types of our predictors. Because we plan to train a logistic regression model, we know that predictors will ultimately need to be numeric, as opposed to nominal data like strings and factor variables. In other words, there may be a difference in how we store our data (in factors inside a data frame), and how the underlying equations require them (a purely numeric matrix).
+
+For factors like `affil_category` and `test_type`, [standard practice](https://bookdown.org/max/FES/creating-dummy-variables-for-unordered-categories.html) is to convert them into *dummy* or *indicator* variables to make them numeric. These are binary values for each level of the factor. For example, our `test_type` variable has values of `"Antigen"`, `"PCR"`, and `"Antibody"`. The standard dummy variable encoding, shown below, will create *two* numeric columns of the data that are 1 when the originating airport is `"PCR"` or `"Antibody"` and zero otherwise, respectively.
+
+| test_type | test_type_PCR | test_type_Antibody |
+|-----------|---------------|--------------------|
+| PCR       | 1             | 0                  |
+| Antigen   | 0             | 0                  |
+| Antibody  | 0             | 1                  |
+
+But, unlike the standard model formula methods in R, a recipe **does not** automatically create these dummy variables for you; you'll need to tell your recipe to add this step. This is for two reasons. First, many models do not require [numeric predictors](https://bookdown.org/max/FES/categorical-trees.html), so dummy variables may not always be preferred. Second, recipes can also be used for purposes outside of modeling, where non-dummy versions of the variables may work better. For example, you may want to make a table or a plot with a variable as a single factor. For those reasons, you need to explicitly tell recipes to create dummy variables using `step_dummy()`:
+
+```{r}
+covid_rec <-
+  recipe(test_result ~ ., data = train_data) %>%
+  update_role(test_source, result_date, new_role = "ID") %>%
+  step_date(date, features = c("dow", "month")) %>%
+  step_holiday(date, 
+               holidays = timeDate::listHolidays("US"), 
+               keep_original_cols = FALSE) %>%
+  step_dummy(all_nominal_predictors())
+```
+
+Here, we did something different than before: instead of applying a step to an individual variable, we used [selectors](https://recipes.tidymodels.org/reference/selections.html) to apply this recipe step to several variables at once, `all_nominal_predictors()`. The [selector functions](https://recipes.tidymodels.org/reference/selections.html) can be combined to select intersections of variables.
+
+At this stage in the recipe, this step selects the `affil_category` and `test_type` variables. It also includes two new variables, `date_dow` and `date_month`, that were created by the earlier `step_date()`.
+
+More generally, the recipe selectors mean that you don't always have to apply steps to individual variables one at a time. Since a recipe knows the *variable type* and *role* of each column, they can also be selected (or dropped) using this information.
+
+We need one final step to add to our recipe. Since `affil_category` and `test_type` have some infrequently occurring factor values, it is possible that dummy variables might be created for values that don't exist in the training set. Thankfully, we don't see this problem with, for example, `affil_category`:
+
+```{r}
+test_data %>%
+  distinct(affil_category) %>%
+  anti_join(train_data)
+```
+
+When the recipe is applied to the training set, a column is made for each of the factor levels come from `data` (not the training set), but this column may contain all zeros if each factor is not represented in both the training and testing data. This would a "zero-variance predictor" that has no information within the column. While some R functions will not produce an error for such predictors, it usually causes warnings and other issues. `step_zv()` will remove columns from the data when the training set data have a single value, so it is added to the recipe *after* `step_dummy()`:
+
+```{r}
+covid_rec <-
+  recipe(test_result ~ ., data = train_data) %>%
+  update_role(test_source, result_date, new_role = "ID") %>%
+  step_date(date, features = c("dow", "month")) %>%
+  step_holiday(date, 
+               holidays = timeDate::listHolidays("US"), 
+               keep_original_cols = FALSE) %>%
+  step_dummy(all_nominal_predictors()) %>%
+  # shouldn't change anything, but good practice to include
+  step_zv(all_predictors())
+```
+
+Now we've created a *specification* of what should be done with the data. How do we use the recipe we made?
+
+------------------------------------------------------------------------
+
+## Fit a Model with a Recipe
+
+Let's use logistic regression to model the COVID-19 testing data. As we saw in [*Build a Model*](https://gchism.quarto.pub/tidymodels-build-a-model/), we start by [building a model specification](https://www.tidymodels.org/start/models/#build-model) using the parsnip package:
+
+```{r}
+lr_mod <- 
+  logistic_reg() %>% 
+  set_engine("glm")
+```
+
+We will want to use our recipe across several steps as we train and test our model. We will:
+
+1.  **Process the recipe using the training set**: This involves any estimation or calculations based on the training set. For our recipe, the training set will be used to determine which predictors should be converted to dummy variables and which predictors will have zero-variance in the training set, and should be slated for removal.
+
+2.  **Apply the recipe to the training set**: We create the final predictor set on the training set.
+
+3.  **Apply the recipe to the test set**: We create the final predictor set on the test set. Nothing is recomputed and no information from the test set is used here; the dummy variable and zero-variance results from the training set are applied to the test set.
+
+To simplify this process, we can use a *model workflow*, which pairs a model and recipe together. This is a straightforward approach because different recipes are often needed for different models, so when a model and recipe are bundled, it becomes easier to train and test *workflows*. We'll use the [workflows package](https://workflows.tidymodels.org/) from tidymodels to bundle our parsnip model (`lr_mod`) with our recipe (`covid_rec`).
+
+```{r}
+covid_wflow <- 
+  workflow() %>% 
+  add_model(lr_mod) %>% 
+  add_recipe(covid_rec)
+
+covid_wflow
+```
+
+Now, there is a single function that can be used to prepare the recipe and train the model from the resulting predictors:
+
+```{r}
+covid_fit <- 
+  covid_wflow %>%
+  fit(data = train_data)
+```
+
+This object has the finalized recipe and fitted model objects inside. You may want to extract the model or recipe objects from the workflow. To do this, you can use the helper functions `extract_fit_parsnip()` and `extract_recipe()`. For example, here we pull the fitted model object then use the `broom::tidy()` function to get a tidy tibble of model coefficients:
+
+```{r}
+covid_fit %>% 
+  extract_fit_parsnip() %>% 
+  tidy()
+```
+
+------------------------------------------------------------------------
+
+## Use a Trained Workflow to Predict
+
+Our goal was to predict whether more testing led to more positive results. We have just:
+
+1.  Built the model (`lr_mod`),
+
+2.  Created a preprocessing recipe (`covid_rec`),
+
+3.  Bundled the model and recipe (`covid_wflow`), and
+
+4.  Trained our workflow using a single call to `fit()`.
+
+The next step is to use the trained workflow (`covid_fit`) to predict with the unseen test data, which we will do with a single call to `predict()`. The `predict()` method applies the recipe to the new data, then passes them to the fitted model.
+
+```{r}
+predict(covid_fit, test_data)
+```
+
+Because our outcome variable here is a factor, the output from `predict()` returns the predicted class: `Negative` versus `Positive`. But, let's say we want the predicted class probabilities for each `test_source` instead. To return those, we can specify `type = "prob"` when we use `predict()` or use `augment()` with the model plus test data to save them together:
+
+```{r}
+covid_aug <- 
+  augment(covid_fit, test_data)
+
+# The data looks like:
+covid_aug %>%
+  select(test_count, result_date, test_source, .pred_class, .pred_Positive) 
+```
+
+Now that we have a tibble with our predicted class probabilities, how will we evaluate the performance of our workflow? We can see from these first few rows that our model predicted these 5 on time flights correctly because the values of `.pred_on_time` are $p > .50$. But we also know that we have 2,288 rows total to predict. We would like to calculate a metric that tells how well our model predicted late arrivals, compared to the true status of our outcome variable, `test_result`.
+
+Let's use the area under the [ROC curve](https://bookdown.org/max/FES/measuring-performance.html#class-metrics) as our metric, computed using `roc_curve()` and `roc_auc()` from the [yardstick package](https://yardstick.tidymodels.org/).
+
+To generate a ROC curve, we need the predicted class probabilities for `Positive` and `Negative`, which we just calculated in the code chunk above. We can create the ROC curve with these values, using `roc_curve()` and then piping to the `autoplot()` method:
+
+```{r}
+covid_aug %>%
+  roc_curve(truth = test_result, .pred_Positive) %>%
+  autoplot()
+```
+
+Similarly, `roc_auc()` estimates the area under the curve:
+
+```{r}
+covid_aug %>%
+  roc_auc(truth = test_result, .pred_Positive) 
+```
+
+Not too bad! We leave it to the reader to test out this workflow [*without*](https://workflows.tidymodels.org/reference/add_formula.html) this recipe. You can use `workflows::add_formula(test_result ~ .)` instead of `add_recipe()` (remember to remove the identification variables first!), and see whether our recipe improved our model's ability to predict late arrivals.
+
+------------------------------------------------------------------------
+
+## Session Information
+
+```{r, echo = FALSE}
+sessioninfo::session_info(pkgs = "attached")
+```

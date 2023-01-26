@@ -24,7 +24,7 @@ bibliography: references.bib
 
 Python has taken most of the hype as the most widely used programming language for machine learning. This has left R users with a choice: 1. learn Python or 2. don't do machine learning very well. Enter [`tidymodels`](https://www.tidymodels.org/), Posit's solution to machine learning in R, using a framework similar to the [`tidyverse`](https://www.tidyverse.org/).
 
-In this session of the Classical Machine Learning workshop series, we will overview how to build a model using the `tidymodels` framework in R. This is the first necessary step towards the most sophisticated models that we will deploy later in this series.
+In this session of the Classical Machine Learning workshop series, we will overview how to build a model using the `tidymodels` framework in R. This is the first necessary step towards the more sophisticated models that we will deploy later in this series.
 
 This workshop borrows heavily from open source materials hosted on [tidymodels.org](https://www.tidymodels.org/) found [here](https://www.tidymodels.org/start/models/). The author replaced the original `urchins` data with [Meredith, Ladd, and Werner 2021](https://arizona.figshare.com/articles/dataset/Data_for_Ecosystem_fluxes_during_drought_and_recovery_in_an_experimental_forest_/14632593/1) which is described below.
 
@@ -37,7 +37,7 @@ This workshop borrows heavily from open source materials hosted on [tidymodels.o
 
 ------------------------------------------------------------------------
 
-### **Introduction**
+## Introduction
 
 How do you create a statistical model using `tidymodels`? In this article, we will walk you through the steps. We start with data for modeling, learn how to specify and train models with different engines using the [parsnip package](https://parsnip.tidymodels.org/), and understand why these functions are designed this way.
 
@@ -57,7 +57,7 @@ theme_update(legend.position = "right")
 
 ------------------------------------------------------------------------
 
-### Canopy rain forest drought tolerance data
+## Canopy rain forest drought tolerance data
 
 Let's use the data from [@meredith2021] which is from a study that investigates the effects of climate change on canopy and understory (those that grow below the canopy and are share tolerant) trees. The data examine water flux in trees across four groups based on drought susceptibility `Group`:
 
@@ -75,7 +75,7 @@ data <- getURL("https://raw.githubusercontent.com/Gchism94/Data7_EDA_In_R_Worksh
 data <- read.csv(text = data)
 ```
 
-#### Examine the data
+### Examine the data
 
 ```{r}
 data %>%
@@ -107,7 +107,7 @@ ggplot(data,
 
 ------------------------------------------------------------------------
 
-### Build and Fit a Model
+## Build and Fit a Model
 
 A standard three-way analysis of variance ([ANOVA](https://www.statisticshowto.com/three-way-anova/)) model makes sense for this dataset because we have both a continuous and a categorical predictor variables. Since the slopes appear to be different for at least two of the drought treatments, let's build a model that allows for two-way interactions. Specifying an R formula with our variables in this way:
 
@@ -162,7 +162,7 @@ tidy(lm_fit) %>%
 
 ------------------------------------------------------------------------
 
-### Use a Model to Predict
+## Use a Model to Predict
 
 This fitted object `lm_fit` has the `lm` model output built-in, which you can access with `lm_fit$fit`, but there are some benefits to using the fitted parsnip model object when it comes to predicting.
 
@@ -217,7 +217,7 @@ ggplot(plot_data, aes(x = Group)) +
 
 ------------------------------------------------------------------------
 
-### Model with a Different Engine
+## Model with a Different Engine
 
 Every one on your team is happy with that plot *except* that one person who just read their first book on [Bayesian analysis](https://bayesian.org/what-is-bayesian-analysis/). They are interested in knowing if the results would be different if the model were estimated using a Bayesian approach. In such an analysis, a [*prior distribution*](https://towardsdatascience.com/introduction-to-bayesian-linear-regression-e66e60791ea7) needs to be declared for each model parameter that represents the possible values of the parameters (before being exposed to the observed data). After some discussion, the group agrees that the priors should be bell-shaped but, since no one has any idea what the range of values should be, to take a conservative approach and make the priors *wide* using a Cauchy distribution (which is the same as a t-distribution with a single degree of freedom).
 
@@ -274,7 +274,7 @@ This isn't very different from the non-Bayesian results (except in interpretatio
 
 ------------------------------------------------------------------------
 
-### Why does is work that way?
+## Why does is work that way?
 
 The extra step of defining the model using a function like `linear_reg()` might seem superfluous since a call to `lm()` is much more succinct. However, the problem with standard modeling functions is that they don't separate what you want to do from the execution. For example, the process of executing a formula has to happen repeatedly across model calls even when the formula does not change; we can't recycle those computations.
 
@@ -307,8 +307,8 @@ ggplot(data,
 
 ------------------------------------------------------------------------
 
-### Session Information
+## Session Information
 
 ```{r, echo=FALSE}
-sessioninfo::session_info()
+sessioninfo::session_info(pkgs = "attached")
 ```

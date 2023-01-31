@@ -16,7 +16,7 @@ Companion workshop materials utilized throughout iterations of the Classical Mac
 | 22-Feb-2023 | TBD | Carlos Lizarraga | |
 | 01-Mar-2023 | TBD | Carlos Lizarraga | |
 | 22-Mar-2023 | Tidymodels: Preprocess your Data with Recipes | Greg Chism | [LINK](https://gchism.quarto.pub/tidymodels-preprocess-your-data-with-recipes/) |
-| 29-Mar-2023 | Tidymodels: Evaluate your Model with Resample | Greg Chism | |
+| 29-Mar-2023 | Tidymodels: Evaluate your Model with Resample | Greg Chism | [LINK](https://gchism.quarto.pub/tidymodels-evaluate-your-model-with-resampling/) |
 | 05-Apr-2023 | TBD | Carlos Lizarraga | |
 | 12-Apr-2023 | Tidymodels: Tune Model Parameters | Greg Chism | |
 | 26-Apr-2023 | TBD | Carlos Lizarraga | |

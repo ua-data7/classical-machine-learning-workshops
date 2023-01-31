@@ -43,16 +43,17 @@ How do you create a statistical model using `tidymodels`? In this article, we wi
 
 To use code in this article, you will need to install the following packages: `broom.mixed`, `dotwhisker`, `readr`, `rstanarm`, `RCurl` and `tidymodels`.
 
-```{r}
+```{r load-packages}
 library(tidymodels)  # for the parsnip package, along with the rest of tidymodels
 
 # Helper packages
-library(readr)       # for importing data
 library(broom.mixed) # for converting bayesian models to tidy tibbles
 library(dotwhisker)  # for visualizing regression results
 library(RCurl)       # for reading in text files from a URL
-theme_set(theme_minimal(base_size = 14)) 
-theme_update(legend.position = "right")
+
+# Set global theme for ggplots
+theme_set(theme_minimal(base_size = 14))# minimal theme, 14pt font
+theme_update(legend.position = "right") # legend to the right
 ```
 
 ------------------------------------------------------------------------
@@ -69,7 +70,7 @@ Let's use the data from [@meredith2021] which is from a study that investigates 
 
 -   `drought-tol-under`: drought tolerant understory trees.
 
-```{r}
+```{r read-data}
 # Read in csv from the web
 data <- getURL("https://raw.githubusercontent.com/Gchism94/Data7_EDA_In_R_Workshops/main/Data7_EDA_In_R_Book/data/Data_Fig2_Repo.csv")
 data <- read.csv(text = data)
@@ -77,7 +78,7 @@ data <- read.csv(text = data)
 
 ### Examine the data
 
-```{r}
+```{r head-data}
 data %>%
   head()
 ```
@@ -94,7 +95,7 @@ For each of the drought sensitivity groups (`Group`), we know their:
 
 Plot the data before modeling:
 
-```{r, warning=FALSE}
+```{r plot-data, warning=FALSE}
 ggplot(data,
        aes(x = pLWP, 
            y = mLWP, 
@@ -111,7 +112,7 @@ ggplot(data,
 
 A standard three-way analysis of variance ([ANOVA](https://www.statisticshowto.com/three-way-anova/)) model makes sense for this dataset because we have both a continuous and a categorical predictor variables. Since the slopes appear to be different for at least two of the drought treatments, let's build a model that allows for two-way interactions. Specifying an R formula with our variables in this way:
 
-```{r, eval = FALSE}
+```{r formula, eval = FALSE}
 mLWP ~ pLWP * Group
 ```
 
@@ -119,26 +120,26 @@ allows our regression model depending on pre-dawn water potential `pLWP` to have
 
 For this kind of model, [ordinary least squares](https://en.wikipedia.org/wiki/Ordinary_least_squares) is a good initial approach. With tidymodels, we start by specifying the *functional form* of the model that we want using the [parsnip package](https://parsnip.tidymodels.org/). Since there is a numeric outcome and the model should be linear with slopes and intercepts, the model type is ["linear regression"](https://parsnip.tidymodels.org/reference/linear_reg.html). We can declare this with:
 
-```{r}
+```{r lm}
 linear_reg()
 ```
 
 That is pretty underwhelming since, on its own, it doesn't really do much. However, now that the type of model has been specified, we can think about a method for *fitting* or training the model, the model **engine**. The engine value is often a mash-up of the software that can be used to fit or train the model as well as the estimation method. The default for `linear_reg()` is `"lm"` for ordinary least squares, as you can see above. We could set a non-default option instead ([keras](https://cran.r-project.org/web/packages/keras/vignettes/index.html)):
 
-```{r}
+```{r lm-keras}
 linear_reg() %>% 
   set_engine("keras")
 ```
 
 The [documentation page for `linear_reg()`](https://parsnip.tidymodels.org/reference/linear_reg.html) lists all the possible engines. We'll save our model object using the default engine as `lm_mod`.
 
-```{r}
+```{r lm-to-obj}
 lm_mod <- linear_reg()
 ```
 
 From here, the model can be estimated or trained using the [`fit()`](https://parsnip.tidymodels.org/reference/fit.html) function:
 
-```{r}
+```{r lm-fit}
 lm_fit <- 
   lm_mod %>% 
   fit(mLWP ~ pLWP * Group, data = data)
@@ -147,13 +148,13 @@ lm_fit
 
 Perhaps our analysis requires a description of the model parameter estimates and their statistical properties. Although the `summary()` function for `lm` objects can provide that, it gives the results back in an unwieldy format. Many models have a `tidy()` method that provides the summary results in a more predictable and useful format (e.g. a data frame with standard column names):
 
-```{r}
+```{r tidy-lm-fit}
 tidy(lm_fit)
 ```
 
 This kind of output can be used to generate a dot-and-whisker plot of our regression results using the `dotwhisker` package:
 
-```{r}
+```{r lm-dotwhisker}
 tidy(lm_fit) %>% 
   dwplot(dot_args = list(size = 2, color = "black"),
          whisker_args = list(color = "black"),
@@ -168,7 +169,7 @@ This fitted object `lm_fit` has the `lm` model output built-in, which you can ac
 
 Suppose that, for a publication, it would be particularly interesting to make a plot of the mean midday water potential (`mLWP`) for trees that have a pre-dawn water potential (`pLWP`) of -1.75 MPa. To create such a graph, we start with some new example data that we will make predictions for, to show in our graph:
 
-```{r}
+```{r predict-model}
 new_points <- expand.grid(pLWP = -1.75,
                           Group = c("Drought-sens-canopy",
                                     "Drought-sens-under",
@@ -185,21 +186,21 @@ Instead, with `tidymodels`, the types of predicted values are standardized so th
 
 First, let's generate the mean body width values:
 
-```{r}
+```{r mean-predict}
 mean_pred <- predict(lm_fit, new_data = new_points)
 mean_pred
 ```
 
 When making predictions, the `tidymodels` convention is to always produce a tibble of results with standardized column names. This makes it easy to combine the original data and the predictions in a usable format:
 
-```{r}
+```{r conf-int-pred}
 conf_int_pred <- predict(lm_fit,
                          new_data = new_points,
                          type = "conf_int")
 conf_int_pred
 ```
 
-```{r}
+```{r predict-plot}
 # Now combine:
 plot_data <- 
   new_points %>% 
@@ -223,7 +224,7 @@ Every one on your team is happy with that plot *except* that one person who just
 
 The [documentation](https://mc-stan.org/rstanarm/articles/priors.html) on the `rstanarm` package shows us that the `stan_glm()` function can be used to estimate this model, and that the function arguments that need to be specified are called `prior` and `prior_intercept`. It turns out that `linear_reg()` has a [`stan` engine](https://parsnip.tidymodels.org/reference/linear_reg.html#details). Since these prior distribution arguments are specific to the Stan software, they are passed as arguments to [`parsnip::set_engine()`](https://parsnip.tidymodels.org/reference/set_engine.html). After that, the same exact `fit()` call is used:
 
-```{r}
+```{r lm-stan}
 # set the prior distribution
 prior_dist <- rstanarm::student_t(df = 1)
 
@@ -248,13 +249,13 @@ This kind of Bayesian analysis (like many models) involves randomly generated nu
 
 To update the parameter table, the `tidy()` method is once again used:
 
-```{r}
+```{r model-bayes}
 tidy(bayes_fit, conf.int = TRUE)
 ```
 
 A goal of the `tidymodels` packages is that the **interfaces to common tasks are standardized** (as seen in the `tidy()` results above). The same is true for getting predictions; we can use the same code even though the underlying packages use very different syntax:
 
-```{r}
+```{r bayes-plot}
 bayes_plot_data <- 
   new_points %>% 
   bind_cols(predict(bayes_fit, new_data = new_points)) %>% 
@@ -282,7 +283,7 @@ Also, using the `tidymodels` framework, we can do some interesting things by inc
 
 If you are familiar with the tidyverse, you may have noticed that our modeling code uses the magrittr pipe (`%>%`). With dplyr and other `tidyverse` packages, the pipe works well because all of the functions take the *data* as the first argument. For example:
 
-```{r}
+```{r summarize-data}
 data %>%
   group_by(Group) %>%
   drop_na() %>% # note that NAs need to be removed
@@ -291,13 +292,13 @@ data %>%
 
 whereas the modeling code uses the pipe to pass around the *model object*:
 
-```{r, eval=FALSE}
+```{r model-object, eval=FALSE}
 bayes_mod %>% fit(mLWP ~ pLWP * Group, data = data)
 ```
 
 This may seem jarring if you have used dplyr a lot, but it is extremely similar to how ggplot2 operates:
 
-```{r, eval=FALSE}
+```{r ggplot-example, eval=FALSE}
 ggplot(data,
        aes(pLWP, mLWP)) +                # returns a ggplot object
   geom_jitter() +                        # same
@@ -309,6 +310,6 @@ ggplot(data,
 
 ## Session Information
 
-```{r, echo=FALSE}
+```{r session, echo=FALSE}
 sessioninfo::session_info(pkgs = "attached")
 ```

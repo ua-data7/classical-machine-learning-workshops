@@ -141,7 +141,7 @@ div.csl-indent {
   <li><a href="#data-splitting" id="toc-data-splitting" class="nav-link" data-scroll-target="#data-splitting">Data Splitting</a></li>
   <li><a href="#create-recipe-and-roles" id="toc-create-recipe-and-roles" class="nav-link" data-scroll-target="#create-recipe-and-roles">Create Recipe and Roles</a></li>
   <li><a href="#create-features" id="toc-create-features" class="nav-link" data-scroll-target="#create-features">Create Features</a></li>
-  <li><a href="#fit-a-model-with-a-recipe" id="toc-fit-a-model-with-a-recipe" class="nav-link" data-scroll-target="#fit-a-model-with-a-recipe">Fit a Model with a Recipe</a></li>
+  <li><a href="#fit-workflow" id="toc-fit-workflow" class="nav-link" data-scroll-target="#fit-workflow">Fit a Model with a Recipe</a></li>
   <li><a href="#use-a-trained-workflow-to-predict" id="toc-use-a-trained-workflow-to-predict" class="nav-link" data-scroll-target="#use-a-trained-workflow-to-predict">Use a Trained Workflow to Predict</a></li>
   <li><a href="#session-information" id="toc-session-information" class="nav-link" data-scroll-target="#session-information">Session Information</a></li>
   </ul>
@@ -192,14 +192,16 @@ div.csl-indent {
 <h2 class="anchored" data-anchor-id="description">Description</h2>
 <p>Python has taken most of the hype as the most widely used programming language for machine learning. This has left R users with a choice: 1. learn Python or 2. don’t do machine learning very well. Enter <a href="https://www.tidymodels.org/"><code>tidymodels</code></a>, Posit’s solution to machine learning in R, using a framework similar to the <a href="https://www.tidyverse.org/"><code>tidyverse</code></a>.</p>
 <p>In this session of the Classical Machine Learning workshop series, we preprocess our data to be used in a model using the <code>recipes</code> package from <code>tidymodels</code> in R. This is the a necessary step towards the more sophisticated models that we will deploy later in this series.</p>
-<p>This workshop borrows heavily from open source materials hosted on <a href="https://www.tidymodels.org/">tidymodels.org</a> found <a href="https://www.tidymodels.org/start/recipes/">here</a>. The author replaced the original <code>flights</code> data with <a href="https://arizona.figshare.com/articles/dataset/Data_for_Ecosystem_fluxes_during_drought_and_recovery_in_an_experimental_forest_/14632593/1">Meredith, Ladd, and Werner 2021</a> which is described below.</p>
+<p>This workshop borrows heavily from open source materials hosted on <a href="https://www.tidymodels.org/">tidymodels.org</a> found <a href="https://www.tidymodels.org/start/recipes/">here</a>. The author replaced the original <code>flights</code> data with <span class="citation" data-cites="merchant2022">(<a href="#ref-merchant2022" role="doc-biblioref">Merchant et al. 2022</a>)</span> which is described below.</p>
 <section id="objectives" class="level3">
 <h3 class="anchored" data-anchor-id="objectives">Objectives:</h3>
 <ol type="1">
 <li>Load and examine data</li>
-<li>Build and fit a model</li>
-<li>Use a model to predict</li>
-<li>Model with different engines</li>
+<li>Split data</li>
+<li>Create a recipe and roles for a model</li>
+<li>Create features from the data</li>
+<li>Fit a model with a recipe</li>
+<li>Use a trained workflow to predict</li>
 </ol>
 <hr>
 </section>
@@ -236,7 +238,7 @@ div.csl-indent {
 ✖ dplyr::filter()  masks stats::filter()
 ✖ dplyr::lag()     masks stats::lag()
 ✖ recipes::step()  masks stats::step()
-• Learn how to get started at https://www.tidymodels.org/start/</code></pre>
+• Use suppressPackageStartupMessages() to eliminate package startup messages</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Helper packages</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dlookr)      <span class="co"># for variable summaries</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -264,8 +266,9 @@ Attaching package: 'RCurl'</code></pre>
 
     complete</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_set</span>(<span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">14</span>)) </span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_update</span>(<span class="at">legend.position =</span> <span class="st">"right"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set global theme for ggplots</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_set</span>(<span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">14</span>))<span class="co"># minimal theme, 14pt font</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_update</span>(<span class="at">legend.position =</span> <span class="st">"right"</span>) <span class="co"># legend to the right</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <hr>
 </section>
@@ -539,8 +542,8 @@ $ date           &lt;date&gt; 2020-08-04, 2020-08-04, 2020-08-04, 2020-08-04, 20
 <p>Now we’ve created a <em>specification</em> of what should be done with the data. How do we use the recipe we made?</p>
 <hr>
 </section>
-<section id="fit-a-model-with-a-recipe" class="level2">
-<h2 class="anchored" data-anchor-id="fit-a-model-with-a-recipe">Fit a Model with a Recipe</h2>
+<section id="fit-workflow" class="level2">
+<h2 class="anchored" data-anchor-id="fit-workflow">Fit a Model with a Recipe</h2>
 <p>Let’s use logistic regression to model the COVID-19 testing data. As we saw in <a href="https://gchism.quarto.pub/tidymodels-build-a-model/"><em>Build a Model</em></a>, we start by <a href="https://www.tidymodels.org/start/models/#build-model">building a model specification</a> using the parsnip package:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>lr_mod <span class="ot">&lt;-</span> </span>
@@ -675,7 +678,7 @@ Computational engine: glm </code></pre>
 <span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">roc_curve</span>(<span class="at">truth =</span> test_result, .pred_Positive) <span class="sc">%&gt;%</span></span>
 <span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">autoplot</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="TidyModels_Recipes_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid" width="672"></p>
+<p><img src="TidyModels_Recipes_files/figure-html/glm-aug-roc-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 <p>Similarly, <code>roc_auc()</code> estimates the area under the curve:</p>
@@ -706,7 +709,7 @@ Computational engine: glm </code></pre>
  collate  en_US.UTF-8
  ctype    en_US.UTF-8
  tz       America/Phoenix
- date     2023-01-26
+ date     2023-01-30
  pandoc   2.19.2 @ /Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/ (via rmarkdown)
 
 ─ Packages ───────────────────────────────────────────────────────────────────

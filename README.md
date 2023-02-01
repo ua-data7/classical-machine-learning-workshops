@@ -2,6 +2,8 @@
 
 # UA Data Science Institute:  Classical Machine Learning Workshops
 
+<img src="https://github.com/trekhleb/homemade-machine-learning/raw/master/images/machine-learning-map.png" width=840>
+
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 Companion workshop materials utilized throughout iterations of the Classical Machine Learning workshop series. The workshops will utilize either Python's [scikit-learn](https://scikit-learn.org/stable/index.html) machine learning libraries or the R [Tidymodels package](https://www.tidymodels.org/). 

@@ -1,13 +1,15 @@
 # classical-machine-learning-workshops
 
-Data7 Classical Machine Learning Workshops
+# UA Data Science Institute:  Classical Machine Learning Workshops
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-Companion workshop materials utilized throughout iterations of the Classical Machine Learning workshop series. The workshops will utilize either Python machine learning libraries or the R [Tidymodels package](https://www.tidymodels.org/). 
+Companion workshop materials utilized throughout iterations of the Classical Machine Learning workshop series. The workshops will utilize either Python's [scikit-learn](https://scikit-learn.org/stable/index.html) machine learning libraries or the R [Tidymodels package](https://www.tidymodels.org/). 
 
 ## Schedule
-### Spring 2023
+### Wedneday 3:00PM Spring 2023 ([Zoom link](https://arizona.zoom.us/j/83094481167))
+
+#### [Data Science Institute Events Calendar](https://datascience.arizona.edu/calendar)
 
 | Date | Title | Educator | Materials|
 |------|-------|----------|----------|
@@ -18,7 +20,7 @@ Companion workshop materials utilized throughout iterations of the Classical Mac
 | 22-Mar-2023 | Tidymodels: Preprocess your Data with Recipes | Greg Chism | [LINK](https://gchism.quarto.pub/tidymodels-preprocess-your-data-with-recipes/) |
 | 29-Mar-2023 | Tidymodels: Evaluate your Model with Resample | Greg Chism | [LINK](https://gchism.quarto.pub/tidymodels-evaluate-your-model-with-resampling/) |
 | 05-Apr-2023 | scikit-learn: Clustering Algorithms | Carlos Lizarraga | LINK |
-| 12-Apr-2023 | Tidymodels: Tune Model Parameters | Greg Chism | |
+| 12-Apr-2023 | Tidymodels: Tune Model Parameters | Greg Chism | LINK |
 | 26-Apr-2023 | scikit-learn: Dimensionality Reduction Algorithms| Carlos Lizarraga | LINK |
 
 ---

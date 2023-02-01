@@ -1,0 +1,317 @@
+---
+title: "Tidymodels: Tune Model Parameters"
+author: Greg Chism
+format:
+  html:
+    theme: cosmo
+    code-copy: true
+    toc: true
+editor: visual
+bibliography: references.bib
+---
+
+::: columns
+::: {.column width="50%"}
+![[Image Credit](https://www.r-bloggers.com/2018/12/tidymodels/)](https://avatars0.githubusercontent.com/u/29100987?s=400&v=4){alt="Image Credit: https://www.r-bloggers.com/2018/12/tidymodels/" fig-align="left" width="200"}
+:::
+
+::: {.column width="50%"}
+![](https://gchism94.github.io/Data7_EDA_In_R_Workshops/cover.png){fig-align="left" width="392"}
+:::
+:::
+
+## Description
+
+Python has taken most of the hype as the most widely used programming language for machine learning. This has left R users with a choice: 1. learn Python or 2. don't do machine learning very well. Enter [`tidymodels`](https://www.tidymodels.org/), Posit's solution to machine learning in R, using a framework similar to the [`tidyverse`](https://www.tidyverse.org/).
+
+In this session of the Classical Machine Learning workshop series, we will measure how well a model predicts new data utilizing the `tidymodels` framework in R. This is the first necessary step towards the more sophisticated models that we will deploy later in this series.
+
+This workshop borrows heavily from open source materials hosted on [tidymodels.org](https://www.tidymodels.org/) found [here](https://www.tidymodels.org/start/models/). The author replaced the original `cells` data with [@zhang2021] which is described below. As a result, much or the text was changed to reflect a different classification problem.
+
+### Objectives:
+
+1.  Load and examine data
+2.  Build and fit a model to predict
+3.  Tube hyperparameters
+4.  Model tuning with a grid
+5.  Finalize the model
+
+------------------------------------------------------------------------
+
+## Introduction
+
+Some model parameters cannot be learned directly from a data set during model training; these kinds of parameters are called **hyperparameters**. Some examples of hyperparameters include the number of predictors that are sampled at splits in a tree-based model (we call this `mtry` in tidymodels) or the learning rate in a boosted tree model (we call this `learn_rate`). Instead of learning these kinds of hyperparameters during model training, we can *estimate* the best values for these values by training many models on resampled data sets and exploring how well all these models perform. This process is called **tuning**.
+
+To use code in this article, you will need to install the following packages: `RCurl`, `rpart`, `rpart.plot`, `tidymodels`, and `vip`.
+
+```{r load-packages, message=FALSE}
+library(tidymodels)  # for the parsnip package, along with the rest of tidymodels
+
+# Helper packages
+library(RCurl)       # for reading in text files from a URL
+library(rpart.plot)  # for visualizing a decision tree
+library(vip)         # for variable importance plots
+
+# Set theme for ggplots
+theme_set(theme_minimal(base_size = 14)) 
+theme_update(legend.position = "right")
+```
+
+------------------------------------------------------------------------
+
+## Precipitation temporal repacking data
+
+In our previous [*Evaluate your model with resampling*](https://gchism.quarto.pub/tidymodels-evaluate-your-model-with-resampling/) article, we introduced a data set of bunchgrass samples that were labeled `S1`-`S4`, representing four field precipitation treatments. We trained a [random forest model](https://gchism.quarto.pub/tidymodels-evaluate-your-model-with-resampling/#modeling) to predict which samples are classified as what treatment, so that a biologist could assess whether the features actually correspond to the treatments. Note that a statistical model could perform this as well, but its a valuable case use nonetheless since new data may be missing treatment labels. We used [resampling](https://gchism.quarto.pub/tidymodels-evaluate-your-model-with-resampling/#resampling-to-the-rescue) to estimate the performance of our model on this data.
+
+Let's again use the data from [@zhang2021] which is from a study that investigates the effects of larger, fewer precipitation events (due to climate change) on a semi-arid bunchgrass ecosystem. The data examine water flux in bunchgrass across four field precipitation treatments `Treatment` (`S1`-`S4`) and five community blocks `block` (`H1`-`H5`).
+
+**`Treatment`**:
+
+-   `S1`: 3.5 days dry interval
+
+-   `S2`: 7 days dry interval
+
+-   `S3`: 14 days dry interval
+
+-   `S4`: 21 days dry interval
+
+**Note** that the original data are still modified as described in the previous [*Evaluate your model with resampling*](https://gchism.quarto.pub/tidymodels-evaluate-your-model-with-resampling/)article.
+
+```{r read-data}
+# Read in csv from the web
+data <- getURL("https://raw.githubusercontent.com/ua-data7/classical-machine-learning-workshops/main/Workshops/Spring2023/2023-Mar-29/FE_2021_Classification_mod.csv")
+data <- read.csv(text = data) %>%
+  mutate(Treatment = factor(Treatment),
+         block = factor(block),
+         Repro_culm = as.numeric(Repro_culm))
+```
+
+### Examine the data
+
+```{r head-data}
+data %>%
+  head()
+```
+
+For each of the precipitation treatments (`Treatment`) and community block (`block`), we know their:
+
+-   `NEE`: Net ecosystem exchange, measured as whole-plot CO$_2$ flux( $F_c$, μmol m$^-2$ s$^-1$).
+
+-   `ER`: Ecosystem respiration, measured as CO$_2$ exchange (μmol m$^-2$ s$^-1$)
+
+-   `Repro_culm`: Number of reproductive inflorescence (flowers) (plant$^-1$)
+
+------------------------------------------------------------------------
+
+## Predicting Treatment, but Better
+
+Random forest models are a tree-based ensemble method, and typically perform well with [default hyperparameters](https://bradleyboehmke.github.io/HOML/random-forest.html#out-of-the-box-performance). However, the accuracy of some other tree-based models, such as [boosted tree models](https://en.wikipedia.org/wiki/Gradient_boosting#Gradient_tree_boosting) or [decision tree models](https://en.wikipedia.org/wiki/Decision_tree), can be sensitive to the values of hyperparameters. In this article, we will train a **decision tree** model. There are several hyperparameters for decision tree models that can be tuned for better performance. Let\'s explore:
+
+-   the complexity parameter (which we call `cost_complexity` in tidymodels) for the tree, and
+
+-   the maximum `tree_depth`.
+
+Tuning these hyperparameters can improve model performance because decision tree models are prone to [overfitting](https://bookdown.org/max/FES/important-concepts.html#overfitting). This happens because single tree models tend to fit the training data *too well* --- so well, in fact, that they over-learn patterns present in the training data that end up being detrimental when predicting new data.
+
+We will tune the model hyperparameters to avoid overfitting. Tuning the value of `cost_complexity` helps by [pruning](https://bradleyboehmke.github.io/HOML/DT.html#pruning) back our tree. It adds a cost, or penalty, to error rates of more complex trees; a cost closer to zero decreases the number tree nodes pruned and is more likely to result in an overfit tree. However, a high cost increases the number of tree nodes pruned and can result in the opposite problem---an underfit tree. Tuning `tree_depth`, on the other hand, helps by [stopping](https://bradleyboehmke.github.io/HOML/DT.html#early-stopping) our tree from growing after it reaches a certain depth. We want to tune these hyperparameters to find what those two values should be for our model to do the best job predicting image segmentation.
+
+Before we start the tuning process, we split our data into training and testing sets, just like when we trained the model with one default set of hyperparameters. As [before](https://www.tidymodels.org/start/resampling/), we can use `strata = class` if we want our training and testing sets to be created using stratified sampling so that both have the same proportion of both kinds of segmentation.
+
+```{r data-split}
+set.seed(333)
+FE_split <- initial_split(data, strata = Treatment)
+
+FE_train <- training(FE_split)
+FE_test  <- testing(FE_split)
+```
+
+We use the training data for tuning the model.
+
+------------------------------------------------------------------------
+
+## Tuning Hyperparameters
+
+Let\'s start with the parsnip package, using a [`decision_tree()`](https://parsnip.tidymodels.org/reference/decision_tree.html) model with the [rpart](https://cran.r-project.org/web/packages/rpart/index.html) engine. To tune the decision tree hyperparameters `cost_complexity` and `tree_depth`, we create a model specification that identifies which hyperparameters we plan to tune.
+
+```{r tune-params}
+tune_spec <- 
+  decision_tree(
+    cost_complexity = tune(),
+    tree_depth = tune()
+  ) %>% 
+  set_engine("rpart") %>% 
+  set_mode("classification")
+
+tune_spec
+```
+
+Think of `tune()` here as a placeholder. After the tuning process, we will select a single numeric value for each of these hyperparameters. For now, we specify our parsnip model object and identify the hyperparameters we will `tune()`.
+
+We can\'t train this specification on a single data set (such as the entire training set) and learn what the hyperparameter values should be, but we *can* train many models using resampled data and see which models turn out best. We can create a regular grid of values to try using some convenience functions for each hyperparameter:
+
+```{r tree-grid}
+tree_grid <- grid_regular(cost_complexity(),
+                          tree_depth(),
+                          levels = 5)
+```
+
+The function [`grid_regular()`](https://dials.tidymodels.org/reference/grid_regular.html) is from the [dials](https://dials.tidymodels.org/) package. It chooses sensible values to try for each hyperparameter; here, we asked for 5 of each. Since we have two to tune, `grid_regular()` returns 5 $\times$ 5 = 25 different possible tuning combinations to try in a tidy tibble format.
+
+```{r tree-grid-show}
+tree_grid
+```
+
+Armed with our grid filled with 25 candidate decision tree models, let\'s create [cross-validation folds](https://www.tidymodels.org/start/resampling/) for tuning:
+
+```{r vfold}
+set.seed(234)
+
+FE_folds <- vfold_cv(FE_train)
+```
+
+Tuning in tidymodels requires a resampled object created with the [rsample](https://rsample.tidymodels.org/) package.
+
+------------------------------------------------------------------------
+
+## Model Tuning with Grid
+
+We are ready to tune! Let\'s use [`tune_grid()`](https://tune.tidymodels.org/reference/tune_grid.html) to fit models at all the different values we chose for each tuned hyperparameter. There are several options for building the object for tuning:
+
+-   Tune a model specification along with a recipe or model, or
+
+-   Tune a [`workflow()`](https://workflows.tidymodels.org/) that bundles together a model specification and a recipe or model preprocessor.
+
+Here we use a `workflow()` with a straightforward formula; if this model required more involved data preprocessing, we could use `add_recipe()` instead of `add_formula()`.
+
+```{r tune-grid}
+set.seed(345)
+
+tree_wf <- workflow() %>%
+  add_model(tune_spec) %>%
+  add_formula(Treatment ~ .)
+
+tree_res <- 
+  tree_wf %>% 
+  tune_grid(
+    resamples = FE_folds,
+    grid = tree_grid
+  )
+
+tree_res
+```
+
+Once we have our tuning results, we can both explore them through visualization and then select the best result. The function `collect_metrics()` gives us a tidy tibble with all the results. We had 25 candidate models and two metrics, `accuracy` and `roc_auc`, and we get a row for each `.metric` and model.
+
+```{r collect-mets}
+tree_res %>%
+  collect_metrics()
+```
+
+We might get more out of plotting these results:
+
+```{r plot-metrics}
+tree_res %>%
+  collect_metrics() %>%
+  mutate(tree_depth = factor(tree_depth)) %>%
+  ggplot(aes(cost_complexity, mean, color = tree_depth)) +
+  geom_line(linewidth = 1.5, alpha = 0.6) +
+  geom_point(size = 2) +
+  facet_wrap(~ .metric, scales = "free", nrow = 2) +
+  scale_x_log10(labels = scales::label_number()) +
+  scale_color_viridis_d(option = "plasma", begin = 0.9, end = 0)
+```
+
+We can see that our \"stubbiest\" tree, with a depth of 1, is the worst model according to both metrics and across all candidate values of `cost_complexity`. Our deepest tree, with a depth of 15, did better. However, the best tree seems to be between these values with a tree depth of 4. The [`show_best()`](https://tune.tidymodels.org/reference/show_best.html) function shows us the top 5 candidate models by default:
+
+```{r best-model}
+tree_res %>%
+  show_best("accuracy")
+```
+
+We can also use the [`select_best()`](https://tune.tidymodels.org/reference/show_best.html) function to pull out the single set of hyperparameter values for our best decision tree model:
+
+```{r best-model-tree}
+best_tree <- tree_res %>%
+  select_best("accuracy")
+
+best_tree
+```
+
+These are the values for `tree_depth` and `cost_complexity` that maximize accuracy in this data set of cell images.
+
+------------------------------------------------------------------------
+
+## Finalizing our Model
+
+We can update (or \"finalize\") our workflow object `tree_wf` with the values from `select_best()`.
+
+```{r final-model}
+final_wf <- 
+  tree_wf %>% 
+  finalize_workflow(best_tree)
+
+final_wf
+```
+
+Our tuning is done!
+
+### The Last Fit
+
+Finally, let\'s fit this final model to the training data and use our test data to estimate the model performance we expect to see with new data. We can use the function [`last_fit()`](https://tune.tidymodels.org/reference/last_fit.html) with our finalized model; this function *fits* the finalized model on the full training data set and *evaluates* the finalized model on the testing data.
+
+```{r final-fit}
+final_fit <- 
+  final_wf %>%
+  last_fit(FE_split) 
+
+final_fit %>%
+  collect_metrics()
+
+final_fit %>%
+  collect_predictions() %>% 
+  roc_curve(Treatment, c(.pred_S1, .pred_S2, .pred_S3, .pred_S4)) %>% 
+  autoplot()
+```
+
+The performance metrics from the test set indicate that we did not overfit during our tuning procedure.
+
+The `final_fit` object contains a finalized, fitted workflow that you can use for predicting on new data or further understanding the results. You may want to extract this object, using [one of the `extract_` helper functions](https://tune.tidymodels.org/reference/extract-tune.html).
+
+```{r wf-final-fit}
+final_tree <- extract_workflow(final_fit)
+final_tree
+```
+
+We can create a visualization of the decision tree using another helper function to extract the underlying engine-specific fit.
+
+```{r plot-tree}
+final_tree %>%
+  extract_fit_engine() %>%
+  rpart.plot(roundint = FALSE)
+```
+
+Perhaps we would also like to understand what variables are important in this final model. We can use the [vip](https://koalaverse.github.io/vip/) package to estimate variable importance [based on the model\'s structure](https://koalaverse.github.io/vip/reference/vi_model.html#details).
+
+```{r vip}
+final_tree %>% 
+  extract_fit_parsnip() %>% 
+  vip()
+```
+
+These are the sample traits that matter the most. It is not surprising that `Repro_culm` is the most important because it is only collected once for each `block` and `treatment` combination. This could however be a problem because the values are repeated and not new data over time.
+
+We leave it to the reader to explore whether you can tune a different decision tree hyperparameter. You can explore the [reference docs](https://www.tidymodels.org/find/parsnip/#models), or use the `args()` function to see which parsnip object arguments are available:
+
+```{r args-tree}
+args(decision_tree)
+```
+
+You could tune the other hyperparameter we didn\'t use here, `min_n`, which sets the minimum `n` to split at any node. This is another early stopping method for decision trees that can help prevent overfitting. Use this [searchable table](https://www.tidymodels.org/find/parsnip/#model-args) to find the original argument for `min_n` in the rpart package ([hint](https://stat.ethz.ch/R-manual/R-devel/library/rpart/html/rpart.control.html)). See whether you can tune a different combination of hyperparameters and/or values to improve a tree\'s ability to predict cell segmentation quality.
+
+------------------------------------------------------------------------
+
+## Session Information
+
+```{r, echo=FALSE}
+sessioninfo::session_info(pkgs = "attached")
+```

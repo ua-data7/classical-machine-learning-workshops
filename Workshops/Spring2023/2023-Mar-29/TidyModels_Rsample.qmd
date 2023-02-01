@@ -26,7 +26,7 @@ Python has taken most of the hype as the most widely used programming language f
 
 In this session of the Classical Machine Learning workshop series, we will measure how well a model predicts new data utilizing the `tidymodels` framework in R. This is the first necessary step towards the more sophisticated models that we will deploy later in this series.
 
-This workshop borrows heavily from open source materials hosted on [tidymodels.org](https://www.tidymodels.org/) found [here](https://www.tidymodels.org/start/models/). The author replaced the original `cells` data with [@zhang2021] which is described below. As a result, much or the text was changed to reflect a different classification problem.
+This workshop borrows heavily from open source materials hosted on [tidymodels.org](https://www.tidymodels.org/) found [here](https://www.tidymodels.org/start/models/). The author replaced the original `urchins` data with [@zhang2021] which is described below. As a result, much or the text was changed to reflect a different classification problem.
 
 ### Objectives:
 
@@ -43,7 +43,7 @@ So far, we have [built a model](https://gchism.quarto.pub/tidymodels-build-a-mod
 
 To use code in this article, you will need to install the following packages: `dlookr`, `RCurl`, `ranger`, and `tidymodels`.
 
-```{r load-packages}
+```{r load-packages, message=FALSE}
 library(tidymodels)  # for the parsnip package, along with the rest of tidymodels
 
 # Helper packages
@@ -81,18 +81,20 @@ FE_2021_Classification_mod <-
   left_join(Reproductive) %>%
   rename(NEE = `NEE(μmol m-2 s-1)`,
          ER = `ER(μmol m-2 s-1)`,
-         Repro_culm = `Reproductive culm(plant-1)`) 
-
+         Repro_culm = `Reproductive culm(plant-1)`) %>%
+  mutate(Treatment = factor(Treatment),
+         block = factor(block),
+         Repro_culm = as.numeric(Repro_culm))
 FE_2021_Classification_mod <- 
   FE_2021_Classification_mod %>%
   mutate(Repro_culm = imputate_na(FE_2021_Classification_mod, Repro_culm, method = "mice")) 
 ```
-For our classification model to work, we need to take the original data and create factor variables for `Treatment` and `block`, and we need to make `Repro_culm` a numerical variable.
+
 ```{r read-data}
 # Read in csv from the web
 data <- getURL("https://raw.githubusercontent.com/ua-data7/classical-machine-learning-workshops/main/Workshops/Spring2023/2023-Mar-29/FE_2021_Classification_mod.csv")
 data <- read.csv(text = data) %>%
-  mutate(Treatment = factor(Treatment),
+    mutate(Treatment = factor(Treatment),
          block = factor(block),
          Repro_culm = as.numeric(Repro_culm))
 ```
@@ -165,11 +167,11 @@ The majority of the modeling work is then conducted on the training set data.
 
 [Random forest models](https://en.wikipedia.org/wiki/Random_forest) are [ensembles](https://en.wikipedia.org/wiki/Ensemble_learning) of [decision trees](https://en.wikipedia.org/wiki/Decision_tree). A large number of decision tree models are created for the ensemble based on slightly different versions of the training set. When creating the individual decision trees, the fitting process encourages them to be as diverse as possible. The collection of trees are combined into the random forest model and, when a new sample is predicted, the votes from each tree are used to calculate the final predicted value for the new sample. For categorical outcome variables like `Treatment` in our `data` data example, the majority vote across all the trees in the random forest determines the predicted treatment for the new sample.
 
-One of the benefits of a random forest model is that it is very low maintenance; it requires very little preprocessing of the data and the default parameters tend to give reasonable results. For that reason, we won\'t create a recipe for the `data` data.
+One of the benefits of a random forest model is that it is very low maintenance; it requires very little preprocessing of the data and the default parameters tend to give reasonable results. For that reason, we won't create a recipe for the `data` data.
 
 At the same time, the number of trees in the ensemble should be large (in the thousands) and this makes the model moderately expensive to compute.
 
-To fit a random forest model on the training set, let\'s use the [parsnip](https://parsnip.tidymodels.org/) package with the [ranger](https://cran.r-project.org/package=ranger) engine. We first define the model that we want to create:
+To fit a random forest model on the training set, let's use the [parsnip](https://parsnip.tidymodels.org/) package with the [ranger](https://cran.r-project.org/package=ranger) engine. We first define the model that we want to create:
 
 ```{r rf-mod}
 rf_mod <- 
@@ -196,15 +198,15 @@ This new `rf_fit` object is our fitted model, trained on our training data set.
 
 During a modeling project, we might create a variety of different models. To choose between them, we need to consider how well these models do, as measured by some performance statistics. In our example in this article, some options we could use are:
 
--    the area under the Receiver Operating Characteristic (ROC) curve, and
+-   the area under the Receiver Operating Characteristic (ROC) curve, and
 
--    overall classification accuracy.
+-   overall classification accuracy.
 
 The ROC curve uses the class probability estimates to give us a sense of performance across the entire set of potential probability cutoffs. Overall accuracy uses the hard class predictions to measure performance. The hard class predictions tell us whether our model predicted class (`Treatment`: `S1`-`S4`) for each sample. But, behind those predictions, the model is actually estimating a probability. A simple 50% probability cutoff is used to categorize a sample as poorly classified.
 
 The [yardstick package](https://yardstick.tidymodels.org/) has functions for computing both of these measures called `roc_auc()` and `accuracy()`.
 
-At first glance, it might seem like a good idea to use the training set data to compute these statistics. (This is actually a very bad idea.) Let\'s see what happens if we try this. To evaluate performance based on the training set, we call the `predict()` method to get both types of predictions (i.e. probabilities and hard class predictions).
+At first glance, it might seem like a good idea to use the training set data to compute these statistics. (This is actually a very bad idea.) Let's see what happens if we try this. To evaluate performance based on the training set, we call the `predict()` method to get both types of predictions (i.e. probabilities and hard class predictions).
 
 ```{r rf-training-pred}
 rf_training_pred <- 
@@ -225,7 +227,7 @@ rf_training_pred %>%                # training set predictions
   accuracy(truth = Treatment, .pred_class)
 ```
 
-Now that we have this model with exceptional performance, we proceed to the test set. Unfortunately, we discover that, although our results aren\'t bad, they are certainly worse than what we initially thought based on predicting the training set:
+Now that we have this model with exceptional performance, we proceed to the test set. Unfortunately, we discover that, although our results aren't bad, they are certainly worse than what we initially thought based on predicting the training set:
 
 ```{r testing-pred}
 rf_testing_pred <- 
@@ -264,7 +266,7 @@ Resampling methods, such as cross-validation and the bootstrap, are empirical si
 
 In the first level of this diagram, you see what happens when you use `rsample::initial_split()`, which splits the original data into training and test sets. Then, the training set is chosen for resampling, and the test set is held out.
 
-Let\'s use 10-fold cross-validation (CV) in this example. This method randomly allocates the 1514 cells in the training set to 10 groups of roughly equal size, called \"folds\". For the first iteration of resampling, the first fold of about 151 cells are held out for the purpose of measuring performance. This is similar to a test set but, to avoid confusion, we call these data the *assessment set* in the tidymodels framework.
+Let's use 10-fold cross-validation (CV) in this example. This method randomly allocates the 1514 cells in the training set to 10 groups of roughly equal size, called "folds". For the first iteration of resampling, the first fold of about 151 cells are held out for the purpose of measuring performance. This is similar to a test set but, to avoid confusion, we call these data the *assessment set* in the tidymodels framework.
 
 The other 90% of the data (about 1362 cells) are used to fit the model. Again, this sounds similar to a training set, so in tidymodels we call this data the *analysis set*. This model, trained on the analysis set, is applied to the assessment set to generate predictions, and performance statistics are computed based on those predictions.
 
@@ -306,11 +308,11 @@ The list column for `splits` contains the information on which rows belong in th
 
 However, the tune package contains high-level functions that can do the required computations to resample a model for the purpose of measuring performance. You have several options for building an object for resampling:
 
--    Resample a model specification preprocessed with a formula or [recipe](https://www.tidymodels.org/start/recipes/), or
+-   Resample a model specification preprocessed with a formula or [recipe](https://www.tidymodels.org/start/recipes/), or
 
--    Resample a [`workflow()`](https://workflows.tidymodels.org/) that bundles together a model specification and formula/recipe.
+-   Resample a [`workflow()`](https://workflows.tidymodels.org/) that bundles together a model specification and formula/recipe.
 
-For this example, let\'s use a `workflow()` that bundles together the random forest model and a formula, since we are not using a recipe. Whichever of these options you use, the syntax to `fit_resamples()` is very similar to `fit()`:
+For this example, let's use a `workflow()` that bundles together the random forest model and a formula, since we are not using a recipe. Whichever of these options you use, the syntax to `fit_resamples()` is very similar to `fit()`:
 
 ```{r rf-workflow}
 rf_wf <- 
@@ -334,7 +336,7 @@ The results are similar to the `folds` results with some extra columns. The colu
 collect_metrics(rf_fit_rs)
 ```
 
-Think about these values we now have for accuracy and AUC. These performance metrics are now more realistic (i.e. lower) than our ill-advised first attempt at computing performance metrics in the section above. If we wanted to try different model types for this data set, we could more confidently compare performance metrics computed using resampling to choose between models. Also, remember that at the end of our project, we return to our test set to estimate final model performance. We have looked at this once already before we started using resampling, but let\'s remind ourselves of the results:
+Think about these values we now have for accuracy and AUC. These performance metrics are now more realistic (i.e. lower) than our ill-advised first attempt at computing performance metrics in the section above. If we wanted to try different model types for this data set, we could more confidently compare performance metrics computed using resampling to choose between models. Also, remember that at the end of our project, we return to our test set to estimate final model performance. We have looked at this once already before we started using resampling, but let's remind ourselves of the results:
 
 ```{r re-rf-testing}
 rf_testing_pred %>%                # test set predictions
@@ -343,8 +345,6 @@ rf_testing_pred %>%                # test set predictions
 rf_testing_pred %>%                # test set predictions
   accuracy(truth = Treatment, .pred_class)
 ```
-
-The performance metrics from the test set are much closer to the performance metrics computed using resampling than our first (\"bad idea\") attempt. Resampling allows us to simulate how well our model will perform on new data, and the test set acts as the final, unbiased check for our model\'s performance.
 
 ------------------------------------------------------------------------
 

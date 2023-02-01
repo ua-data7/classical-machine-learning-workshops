@@ -43,7 +43,7 @@ How do you create a statistical model using `tidymodels`? In this article, we wi
 
 To use code in this article, you will need to install the following packages: `broom.mixed`, `dotwhisker`, `readr`, `rstanarm`, `RCurl` and `tidymodels`.
 
-```{r load-packages}
+```{r load-packages, message=FALSE}
 library(tidymodels)  # for the parsnip package, along with the rest of tidymodels
 
 # Helper packages

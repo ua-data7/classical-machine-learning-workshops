@@ -55,7 +55,7 @@ and so on. If you are familiar with R's formula interface, a lot of this might s
 
 To use code in this article, you will need to install the following packages: `dlookr`, `RCurl`, and `tidymodels`.
 
-```{r load-packages}
+```{r load-packages, message=FALSE}
 library(tidymodels)  # for the parsnip package, along with the rest of tidymodels
 
 # Helper packages
@@ -397,4 +397,3 @@ Not too bad! We leave it to the reader to test out this workflow [*without*](htt
 ```{r session, echo = FALSE}
 sessioninfo::session_info(pkgs = "attached")
 ```
-

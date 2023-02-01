@@ -23,8 +23,8 @@ Companion workshop materials utilized throughout iterations of the Classical Mac
 
 ---
 
-<p><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/CC_BY-NC-SA.svg/800px-CC_BY-NC-SA.svg.png?20181117113353" width="150" height="50"/> [CC BY-NC-SA](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/CC_BY-NC-SA.svg/800px-CC_BY-NC-SA.svg.png?20181117113353" width="150" height="50"/> [CC BY-NC-SA](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 
-<p>[<img src="https://datascience.arizona.edu/sites/default/files/Data%20Science%20Institute_Webheader%20%281%29.svg" width="256">](https://datascience.arizona.edu)
+[<img src="https://datascience.arizona.edu/sites/default/files/Data%20Science%20Institute_Webheader%20%281%29.svg" width="256">](https://datascience.arizona.edu)
 

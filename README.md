@@ -18,7 +18,7 @@ Companion workshop materials utilized throughout iterations of the Classical Mac
 | 01-Feb-2023 | Overview of Classical Machine Learning | Carlos Lizarraga| [LINK](https://github.com/clizarraga-UAD7/Workshops/wiki/An-Overview-of-Machine-Learning-Algorithms)|
 | 08-Feb-2023 | Tidymodels: Build a Model| Greg Chism | [LINK](https://gchism.quarto.pub/tidymodels-build-a-model/) |
 | 22-Feb-2023 | scikit-learn: Classification Algorithms | Carlos Lizarraga | [LINK](https://github.com/clizarraga-UAD7/MLWorkshops/wiki/Supervised-Machine-Learning:-Classification-Algorithms) |
-| 01-Mar-2023 | scikit-learn: Regression Algorithms | Carlos Lizarraga | LINK |
+| 01-Mar-2023 | scikit-learn: Regression Algorithms | Carlos Lizarraga | [LINK](https://github.com/clizarraga-UAD7/MLWorkshops/wiki/Supervised-Machine-Learning:-Regression-Algorithms) |
 | 22-Mar-2023 | Tidymodels: Preprocess your Data with Recipes | Greg Chism | [LINK](https://gchism.quarto.pub/tidymodels-preprocess-your-data-with-recipes/) |
 | 29-Mar-2023 | Tidymodels: Evaluate your Model with Resample | Greg Chism | [LINK](https://gchism.quarto.pub/tidymodels-evaluate-your-model-with-resampling/) |
 | 05-Apr-2023 | scikit-learn: Clustering Algorithms | Carlos Lizarraga | LINK |

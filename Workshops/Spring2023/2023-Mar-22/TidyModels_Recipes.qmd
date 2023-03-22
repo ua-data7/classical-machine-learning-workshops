@@ -205,7 +205,8 @@ Now we can start adding steps onto our recipe using the pipe operator. Perhaps i
 ```{r create-features}
 data_mod %>%
   distinct(result_date) %>%
-  mutate(numeric_date = as.numeric(result_date)) %>%
+  mutate(result_date = lubridate::ymd(result_date),
+    numeric_date = as.integer(format(result_date, "%Y%m%d"))) %>%
   head()
 ```
 

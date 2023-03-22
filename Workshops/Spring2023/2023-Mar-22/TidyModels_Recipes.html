@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.2.269">
+<meta name="generator" content="quarto-1.2.335">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -392,19 +392,17 @@ $ date           &lt;date&gt; 2020-08-04, 2020-08-04, 2020-08-04, 2020-08-04, 20
 <div class="cell">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>data_mod <span class="sc">%&gt;%</span></span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(result_date) <span class="sc">%&gt;%</span></span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">numeric_date =</span> <span class="fu">as.numeric</span>(result_date)) <span class="sc">%&gt;%</span></span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in mask$eval_all_mutate(quo): NAs introduced by coercion</code></pre>
-</div>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">result_date =</span> lubridate<span class="sc">::</span><span class="fu">ymd</span>(result_date),</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">numeric_date =</span> <span class="fu">as.integer</span>(<span class="fu">format</span>(result_date, <span class="st">"%Y%m%d"</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  result_date numeric_date
-1  2020-08-04           NA
-2  2020-08-05           NA
-3  2020-08-06           NA
-4  2020-08-07           NA
-5  2020-08-09           NA
-6  2020-08-10           NA</code></pre>
+1  2020-08-04     20200804
+2  2020-08-05     20200805
+3  2020-08-06     20200806
+4  2020-08-07     20200807
+5  2020-08-09     20200809
+6  2020-08-10     20200810</code></pre>
 </div>
 </div>
 <p>It’s possible that the numeric date variable is a good option for modeling; perhaps the model would benefit from a linear trend between the log-odds of a Positive COVID-19 test and the numeric date variable. However, it might be better to add model terms <em>derived</em> from the date that have a better potential to be important to the model. For example, we could derive the following meaningful features from the single <code>date</code> variable:</p>
@@ -415,13 +413,13 @@ $ date           &lt;date&gt; 2020-08-04, 2020-08-04, 2020-08-04, 2020-08-04, 20
 </ul>
 <p>Let’s do all three of these by adding steps to our recipe:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>covid_rec <span class="ot">&lt;-</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">recipe</span>(test_result <span class="sc">~</span> ., <span class="at">data =</span> train_data) <span class="sc">%&gt;%</span></span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">update_role</span>(test_source, result_date, <span class="at">new_role =</span> <span class="st">"ID"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_date</span>(date, <span class="at">features =</span> <span class="fu">c</span>(<span class="st">"dow"</span>, <span class="st">"month"</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_holiday</span>(date, </span>
-<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>               <span class="at">holidays =</span> timeDate<span class="sc">::</span><span class="fu">listHolidays</span>(<span class="st">"US"</span>), </span>
-<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>               <span class="at">keep_original_cols =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>covid_rec <span class="ot">&lt;-</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">recipe</span>(test_result <span class="sc">~</span> ., <span class="at">data =</span> train_data) <span class="sc">%&gt;%</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">update_role</span>(test_source, result_date, <span class="at">new_role =</span> <span class="st">"ID"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_date</span>(date, <span class="at">features =</span> <span class="fu">c</span>(<span class="st">"dow"</span>, <span class="st">"month"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_holiday</span>(date, </span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>               <span class="at">holidays =</span> timeDate<span class="sc">::</span><span class="fu">listHolidays</span>(<span class="st">"US"</span>), </span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>               <span class="at">keep_original_cols =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>What do each of these steps do?</p>
 <ul>
@@ -459,25 +457,25 @@ $ date           &lt;date&gt; 2020-08-04, 2020-08-04, 2020-08-04, 2020-08-04, 20
 </table>
 <p>But, unlike the standard model formula methods in R, a recipe <strong>does not</strong> automatically create these dummy variables for you; you’ll need to tell your recipe to add this step. This is for two reasons. First, many models do not require <a href="https://bookdown.org/max/FES/categorical-trees.html">numeric predictors</a>, so dummy variables may not always be preferred. Second, recipes can also be used for purposes outside of modeling, where non-dummy versions of the variables may work better. For example, you may want to make a table or a plot with a variable as a single factor. For those reasons, you need to explicitly tell recipes to create dummy variables using <code>step_dummy()</code>:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>covid_rec <span class="ot">&lt;-</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">recipe</span>(test_result <span class="sc">~</span> ., <span class="at">data =</span> train_data) <span class="sc">%&gt;%</span></span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">update_role</span>(test_source, result_date, <span class="at">new_role =</span> <span class="st">"ID"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_date</span>(date, <span class="at">features =</span> <span class="fu">c</span>(<span class="st">"dow"</span>, <span class="st">"month"</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_holiday</span>(date, </span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>               <span class="at">holidays =</span> timeDate<span class="sc">::</span><span class="fu">listHolidays</span>(<span class="st">"US"</span>), </span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>               <span class="at">keep_original_cols =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_dummy</span>(<span class="fu">all_nominal_predictors</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>covid_rec <span class="ot">&lt;-</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">recipe</span>(test_result <span class="sc">~</span> ., <span class="at">data =</span> train_data) <span class="sc">%&gt;%</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">update_role</span>(test_source, result_date, <span class="at">new_role =</span> <span class="st">"ID"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_date</span>(date, <span class="at">features =</span> <span class="fu">c</span>(<span class="st">"dow"</span>, <span class="st">"month"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_holiday</span>(date, </span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>               <span class="at">holidays =</span> timeDate<span class="sc">::</span><span class="fu">listHolidays</span>(<span class="st">"US"</span>), </span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>               <span class="at">keep_original_cols =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_dummy</span>(<span class="fu">all_nominal_predictors</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Here, we did something different than before: instead of applying a step to an individual variable, we used <a href="https://recipes.tidymodels.org/reference/selections.html">selectors</a> to apply this recipe step to several variables at once, <code>all_nominal_predictors()</code>. The <a href="https://recipes.tidymodels.org/reference/selections.html">selector functions</a> can be combined to select intersections of variables.</p>
 <p>At this stage in the recipe, this step selects the <code>affil_category</code> and <code>test_type</code> variables. It also includes two new variables, <code>date_dow</code> and <code>date_month</code>, that were created by the earlier <code>step_date()</code>.</p>
 <p>More generally, the recipe selectors mean that you don’t always have to apply steps to individual variables one at a time. Since a recipe knows the <em>variable type</em> and <em>role</em> of each column, they can also be selected (or dropped) using this information.</p>
 <p>We need one final step to add to our recipe. Since <code>affil_category</code> and <code>test_type</code> have some infrequently occurring factor values, it is possible that dummy variables might be created for values that don’t exist in the training set. Thankfully, we don’t see this problem with, for example, <code>affil_category</code>:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>test_data <span class="sc">%&gt;%</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(affil_category) <span class="sc">%&gt;%</span></span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">anti_join</span>(train_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>test_data <span class="sc">%&gt;%</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(affil_category) <span class="sc">%&gt;%</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">anti_join</span>(train_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Joining, by = "affil_category"</code></pre>
+<pre><code>Joining with `by = join_by(affil_category)`</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] affil_category
@@ -486,16 +484,16 @@ $ date           &lt;date&gt; 2020-08-04, 2020-08-04, 2020-08-04, 2020-08-04, 20
 </div>
 <p>When the recipe is applied to the training set, a column is made for each of the factor levels come from <code>data</code> (not the training set), but this column may contain all zeros if each factor is not represented in both the training and testing data. This would a “zero-variance predictor” that has no information within the column. While some R functions will not produce an error for such predictors, it usually causes warnings and other issues. <code>step_zv()</code> will remove columns from the data when the training set data have a single value, so it is added to the recipe <em>after</em> <code>step_dummy()</code>:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>covid_rec <span class="ot">&lt;-</span></span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">recipe</span>(test_result <span class="sc">~</span> ., <span class="at">data =</span> train_data) <span class="sc">%&gt;%</span></span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">update_role</span>(test_source, result_date, <span class="at">new_role =</span> <span class="st">"ID"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_date</span>(date, <span class="at">features =</span> <span class="fu">c</span>(<span class="st">"dow"</span>, <span class="st">"month"</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_holiday</span>(date, </span>
-<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>               <span class="at">holidays =</span> timeDate<span class="sc">::</span><span class="fu">listHolidays</span>(<span class="st">"US"</span>), </span>
-<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>               <span class="at">keep_original_cols =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_dummy</span>(<span class="fu">all_nominal_predictors</span>()) <span class="sc">%&gt;%</span></span>
-<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># shouldn't change anything, but good practice to include</span></span>
-<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_zv</span>(<span class="fu">all_predictors</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>covid_rec <span class="ot">&lt;-</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">recipe</span>(test_result <span class="sc">~</span> ., <span class="at">data =</span> train_data) <span class="sc">%&gt;%</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">update_role</span>(test_source, result_date, <span class="at">new_role =</span> <span class="st">"ID"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_date</span>(date, <span class="at">features =</span> <span class="fu">c</span>(<span class="st">"dow"</span>, <span class="st">"month"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_holiday</span>(date, </span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>               <span class="at">holidays =</span> timeDate<span class="sc">::</span><span class="fu">listHolidays</span>(<span class="st">"US"</span>), </span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>               <span class="at">keep_original_cols =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_dummy</span>(<span class="fu">all_nominal_predictors</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># shouldn't change anything, but good practice to include</span></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_zv</span>(<span class="fu">all_predictors</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Now we’ve created a <em>specification</em> of what should be done with the data. How do we use the recipe we made?</p>
 <hr>
@@ -504,9 +502,9 @@ $ date           &lt;date&gt; 2020-08-04, 2020-08-04, 2020-08-04, 2020-08-04, 20
 <h2 class="anchored" data-anchor-id="fit-workflow">Fit a Model with a Recipe</h2>
 <p>Let’s use logistic regression to model the COVID-19 testing data. As we saw in <a href="https://gchism.quarto.pub/tidymodels-build-a-model/"><em>Build a Model</em></a>, we start by <a href="https://www.tidymodels.org/start/models/#build-model">building a model specification</a> using the parsnip package:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>lr_mod <span class="ot">&lt;-</span> </span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">logistic_reg</span>() <span class="sc">%&gt;%</span> </span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_engine</span>(<span class="st">"glm"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>lr_mod <span class="ot">&lt;-</span> </span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">logistic_reg</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_engine</span>(<span class="st">"glm"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We will want to use our recipe across several steps as we train and test our model. We will:</p>
 <ol type="1">
@@ -516,12 +514,12 @@ $ date           &lt;date&gt; 2020-08-04, 2020-08-04, 2020-08-04, 2020-08-04, 20
 </ol>
 <p>To simplify this process, we can use a <em>model workflow</em>, which pairs a model and recipe together. This is a straightforward approach because different recipes are often needed for different models, so when a model and recipe are bundled, it becomes easier to train and test <em>workflows</em>. We’ll use the <a href="https://workflows.tidymodels.org/">workflows package</a> from tidymodels to bundle our parsnip model (<code>lr_mod</code>) with our recipe (<code>covid_rec</code>).</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>covid_wflow <span class="ot">&lt;-</span> </span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">workflow</span>() <span class="sc">%&gt;%</span> </span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_model</span>(lr_mod) <span class="sc">%&gt;%</span> </span>
-<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_recipe</span>(covid_rec)</span>
-<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>covid_wflow</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>covid_wflow <span class="ot">&lt;-</span> </span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">workflow</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_model</span>(lr_mod) <span class="sc">%&gt;%</span> </span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_recipe</span>(covid_rec)</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>covid_wflow</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>══ Workflow ════════════════════════════════════════════════════════════════════
 Preprocessor: Recipe
@@ -543,18 +541,18 @@ Computational engine: glm </code></pre>
 </div>
 <p>Now, there is a single function that can be used to prepare the recipe and train the model from the resulting predictors:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>covid_fit <span class="ot">&lt;-</span> </span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  covid_wflow <span class="sc">%&gt;%</span></span>
-<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fit</span>(<span class="at">data =</span> train_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>covid_fit <span class="ot">&lt;-</span> </span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  covid_wflow <span class="sc">%&gt;%</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fit</span>(<span class="at">data =</span> train_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</code></pre>
 </div>
 </div>
 <p>This object has the finalized recipe and fitted model objects inside. You may want to extract the model or recipe objects from the workflow. To do this, you can use the helper functions <code>extract_fit_parsnip()</code> and <code>extract_recipe()</code>. For example, here we pull the fitted model object then use the <code>broom::tidy()</code> function to get a tidy tibble of model coefficients:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>covid_fit <span class="sc">%&gt;%</span> </span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">extract_fit_parsnip</span>() <span class="sc">%&gt;%</span> </span>
-<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tidy</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>covid_fit <span class="sc">%&gt;%</span> </span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">extract_fit_parsnip</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tidy</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 36 × 5
    term                     estimate std.error statistic   p.value
@@ -585,7 +583,7 @@ Computational engine: glm </code></pre>
 </ol>
 <p>The next step is to use the trained workflow (<code>covid_fit</code>) to predict with the unseen test data, which we will do with a single call to <code>predict()</code>. The <code>predict()</code> method applies the recipe to the new data, then passes them to the fitted model.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">predict</span>(covid_fit, test_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">predict</span>(covid_fit, test_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 2,288 × 1
    .pred_class
@@ -605,12 +603,12 @@ Computational engine: glm </code></pre>
 </div>
 <p>Because our outcome variable here is a factor, the output from <code>predict()</code> returns the predicted class: <code>Negative</code> versus <code>Positive</code>. But, let’s say we want the predicted class probabilities for each <code>test_source</code> instead. To return those, we can specify <code>type = "prob"</code> when we use <code>predict()</code> or use <code>augment()</code> with the model plus test data to save them together:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>covid_aug <span class="ot">&lt;-</span> </span>
-<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">augment</span>(covid_fit, test_data)</span>
-<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a><span class="co"># The data looks like:</span></span>
-<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>covid_aug <span class="sc">%&gt;%</span></span>
-<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(test_count, result_date, test_source, .pred_class, .pred_Positive) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>covid_aug <span class="ot">&lt;-</span> </span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">augment</span>(covid_fit, test_data)</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a><span class="co"># The data looks like:</span></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>covid_aug <span class="sc">%&gt;%</span></span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(test_count, result_date, test_source, .pred_class, .pred_Positive) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 2,288 × 5
    test_count result_date test_source         .pred_class .pred_Positive
@@ -632,9 +630,18 @@ Computational engine: glm </code></pre>
 <p>Let’s use the area under the <a href="https://bookdown.org/max/FES/measuring-performance.html#class-metrics">ROC curve</a> as our metric, computed using <code>roc_curve()</code> and <code>roc_auc()</code> from the <a href="https://yardstick.tidymodels.org/">yardstick package</a>.</p>
 <p>To generate a ROC curve, we need the predicted class probabilities for <code>Positive</code> and <code>Negative</code>, which we just calculated in the code chunk above. We can create the ROC curve with these values, using <code>roc_curve()</code> and then piping to the <code>autoplot()</code> method:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>covid_aug <span class="sc">%&gt;%</span></span>
-<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">roc_curve</span>(<span class="at">truth =</span> test_result, .pred_Positive) <span class="sc">%&gt;%</span></span>
-<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">autoplot</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>covid_aug <span class="sc">%&gt;%</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">roc_curve</span>(<span class="at">truth =</span> test_result, .pred_Positive) <span class="sc">%&gt;%</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">autoplot</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Returning more (or less) than 1 row per `summarise()` group was deprecated in
+dplyr 1.1.0.
+ℹ Please use `reframe()` instead.
+ℹ When switching from `summarise()` to `reframe()`, remember that `reframe()`
+  always returns an ungrouped data frame and adjust accordingly.
+ℹ The deprecated feature was likely used in the yardstick package.
+  Please report the issue at &lt;]8;;https://github.com/tidymodels/yardstick/issueshttps://github.com/tidymodels/yardstick/issues]8;;&gt;.</code></pre>
+</div>
 <div class="cell-output-display">
 <p><img src="TidyModels_Recipes_files/figure-html/glm-aug-roc-1.png" class="img-fluid" width="672"></p>
 </div>
@@ -659,7 +666,7 @@ Computational engine: glm </code></pre>
 <div class="cell-output cell-output-stdout">
 <pre><code>─ Session info ───────────────────────────────────────────────────────────────
  setting  value
- version  R version 4.2.1 (2022-06-23)
+ version  R version 4.2.2 (2022-10-31)
  os       macOS Monterey 12.2
  system   aarch64, darwin20
  ui       X11
@@ -667,31 +674,31 @@ Computational engine: glm </code></pre>
  collate  en_US.UTF-8
  ctype    en_US.UTF-8
  tz       America/Phoenix
- date     2023-02-01
+ date     2023-03-22
  pandoc   2.19.2 @ /Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/ (via rmarkdown)
 
 ─ Packages ───────────────────────────────────────────────────────────────────
- package      * version  date (UTC) lib source
- broom        * 1.0.1    2022-08-29 [1] CRAN (R 4.2.0)
- dials        * 1.1.0    2022-11-04 [1] CRAN (R 4.2.0)
- dlookr       * 0.6.0    2022-06-07 [1] CRAN (R 4.2.0)
- dplyr        * 1.0.10   2022-09-01 [1] CRAN (R 4.2.1)
- ggplot2      * 3.4.0    2022-11-04 [1] CRAN (R 4.2.0)
- infer        * 1.0.3    2022-08-22 [1] CRAN (R 4.2.0)
- modeldata    * 1.0.1    2022-09-06 [1] CRAN (R 4.2.0)
- parsnip      * 1.0.3    2022-11-11 [1] CRAN (R 4.2.0)
- purrr        * 0.3.5    2022-10-06 [1] CRAN (R 4.2.0)
- RCurl        * 1.98-1.9 2022-10-03 [1] CRAN (R 4.2.0)
- recipes      * 1.0.3    2022-11-09 [1] CRAN (R 4.2.0)
- rsample      * 1.1.0    2022-08-08 [1] CRAN (R 4.2.0)
- scales       * 1.2.1    2022-08-20 [1] CRAN (R 4.2.0)
- tibble       * 3.1.8    2022-07-22 [1] CRAN (R 4.2.0)
- tidymodels   * 1.0.0    2022-07-13 [1] CRAN (R 4.2.0)
- tidyr        * 1.2.1    2022-09-08 [1] CRAN (R 4.2.0)
- tune         * 1.0.1    2022-10-09 [1] CRAN (R 4.2.0)
- workflows    * 1.1.2    2022-11-16 [1] CRAN (R 4.2.0)
- workflowsets * 1.0.0    2022-07-12 [1] CRAN (R 4.2.0)
- yardstick    * 1.1.0    2022-09-07 [1] CRAN (R 4.2.0)
+ package      * version   date (UTC) lib source
+ broom        * 1.0.3     2023-01-25 [1] CRAN (R 4.2.0)
+ dials        * 1.1.0     2022-11-04 [1] CRAN (R 4.2.0)
+ dlookr       * 0.6.1     2022-11-08 [1] CRAN (R 4.2.0)
+ dplyr        * 1.1.0     2023-01-29 [1] CRAN (R 4.2.0)
+ ggplot2      * 3.4.0     2022-11-04 [1] CRAN (R 4.2.0)
+ infer        * 1.0.4     2022-12-02 [1] CRAN (R 4.2.0)
+ modeldata    * 1.1.0     2023-01-25 [1] CRAN (R 4.2.0)
+ parsnip      * 1.0.3     2022-11-11 [1] CRAN (R 4.2.0)
+ purrr        * 1.0.1     2023-01-10 [1] CRAN (R 4.2.0)
+ RCurl        * 1.98-1.10 2023-01-27 [1] CRAN (R 4.2.0)
+ recipes      * 1.0.4     2023-01-11 [1] CRAN (R 4.2.0)
+ rsample      * 1.1.1     2022-12-07 [1] CRAN (R 4.2.0)
+ scales       * 1.2.1     2022-08-20 [1] CRAN (R 4.2.0)
+ tibble       * 3.1.8     2022-07-22 [1] CRAN (R 4.2.0)
+ tidymodels   * 1.0.0     2022-07-13 [1] CRAN (R 4.2.0)
+ tidyr        * 1.3.0     2023-01-24 [1] CRAN (R 4.2.0)
+ tune         * 1.0.1     2022-10-09 [1] CRAN (R 4.2.0)
+ workflows    * 1.1.2     2022-11-16 [1] CRAN (R 4.2.0)
+ workflowsets * 1.0.0     2022-07-12 [1] CRAN (R 4.2.0)
+ yardstick    * 1.1.0     2022-09-07 [1] CRAN (R 4.2.0)
 
  [1] /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/library
 

@@ -8,6 +8,8 @@
 
 Companion workshop materials utilized throughout iterations of the Classical Machine Learning workshop series. The workshops will utilize either Python's [scikit-learn](https://scikit-learn.org/stable/index.html) machine learning libraries or the R [Tidymodels package](https://www.tidymodels.org/). 
 
+[**Machine Learning Glossary**](https://developers.google.com/machine-learning/glossary/fundamentals)
+
 ## Schedule
 ### Wedneday 3:00PM Spring 2023 ([Zoom link](https://arizona.zoom.us/j/83094481167))
 
